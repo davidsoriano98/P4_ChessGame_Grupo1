@@ -158,11 +158,15 @@
     <ClCompile Include="ChessBoard.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pieces.cpp" />
+    <ClCompile Include="TCPClient.cpp" />
+    <ClCompile Include="TCPServer.cpp" />
     <ClCompile Include="TCPSocketManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChessBoard.h" />
     <ClInclude Include="pieces.h" />
+    <ClInclude Include="TCPClient.h" />
+    <ClInclude Include="TCPServer.h" />
     <ClInclude Include="TCPSocketManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

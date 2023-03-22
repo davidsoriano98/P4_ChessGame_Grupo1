@@ -4,6 +4,8 @@
 #include <string>
 #include <thread>
 #include "TCPSocketManager.h"
+#include "TCPClient.h"
+#include "TCPServer.h"
 #include "ChessBoard.h"
 
 const unsigned short PORT = 5000;
@@ -31,11 +33,11 @@ void GetLineFromCin(std::string* mssg)
 	}
 }
 
-void OpenReceiveThread(TCPSocketManager* _tcpSocketManager, std::string* _mssg)
+void OpenReceiveThread(TCPClient* _tcpClient, std::string* _mssg)
 {
 	while (applicationRunning)
 	{
-		_tcpSocketManager->ClientReceive(_mssg);
+		_tcpClient->Receive(_mssg);
 	}
 }
 
@@ -136,22 +138,21 @@ void Client()
 {
 	std::cout << "Client mode running" << std::endl;
 	
+	TCPClient tcpClient;
 	TCPSocketManager tcpSocketManager;
 
 	// client connect
-	sf::Socket::Status status = tcpSocketManager.Connect(PORT, IP);
+	sf::Socket::Status status = tcpClient.Connect(PORT, IP);
 
 	sf::Packet infoPacket;
 	std::string sendMessage, receiveMessage;
 
 	// Logic for receiving
-	std::thread tcpSocketReceive(OpenReceiveThread, &tcpSocketManager, &receiveMessage);
+	std::thread tcpSocketReceive(OpenReceiveThread, &tcpClient, &receiveMessage);
 	tcpSocketReceive.detach();
 
 	std::thread getLines(GetLineFromCin, &sendMessage);
 	getLines.detach();
-
-	std::cout << "Input your username:" << std::endl;
 
 	while (applicationRunning)
 	{
@@ -162,19 +163,22 @@ void Client()
 		}
 
 		// Logic for sending
-		if (SendLogic(&tcpSocketManager, Mode::CLIENT, infoPacket, &sendMessage) != true)
+		if (tcpClient.SendMessage(infoPacket, &sendMessage) != true)
 		{
 			break;
 		}
 	}
 
 	sendMessage = "exit";
-	SendLogic(&tcpSocketManager, Mode::CLIENT, infoPacket, &sendMessage);
-	tcpSocketManager.Disconnect();
+	tcpClient.SendMessage(infoPacket, &sendMessage);
+	tcpClient.Disconnect();
 }
 
 void main()
 {
+	ChessBoard board;
+	board.run();
+
 	int server_mode;
 	std::string mode_str;
 	std::cout << "Select a mode: (1) server, (2) cliente" << std::endl;
@@ -189,6 +193,4 @@ void main()
 	{
 		Client();
 	}
-	ChessBoard board;
-	board.run();
 }
