@@ -12,16 +12,6 @@ const unsigned short PORT = 5000;
 const sf::IpAddress IP = "127.0.0.1";
 bool applicationRunning = true;
 
-enum Mode
-{
-	SERVER,
-	CLIENT,
-	COUNT
-};
-
-std::string username;
-bool hasLogedIn = false;
-
 // Function to read from console (adapted for threads)
 void GetLineFromCin(std::string* mssg) 
 {
@@ -33,90 +23,36 @@ void GetLineFromCin(std::string* mssg)
 	}
 }
 
-void OpenReceiveThread(TCPClient* _tcpClient, std::string* _mssg)
+void OpenReceiveThread(TCPClient* _tcpClient)
 {
 	while (applicationRunning)
 	{
-		_tcpClient->Receive(_mssg);
+		_tcpClient->Receive();
 	}
 }
 
-void OpenListener(TCPSocketManager* _tcpSocketManager)
+void OpenListener(TCPServer* _tcpServer)
 {
-	_tcpSocketManager->AddListener(PORT);
+	_tcpServer->AddListener(PORT);
 
 	while (applicationRunning)
 	{
-		_tcpSocketManager->Listen(PORT, IP);
+		_tcpServer->Listen(PORT, IP);
 	}
-}
-
-bool SendLogic(TCPSocketManager* tcpSocketManager, Mode mode, sf::Packet mssgInfo, std::string* message)
-{
-	if (message->size() > 0)
-	{
-		if (*message == "exit")
-		{
-			// Desconection
-			switch (mode)
-			{
-			case SERVER:
-				tcpSocketManager->ServerSendAll("DISCONNECT");
-				break;
-			case CLIENT:
-				std::cout << "CLIENT DISCONECT" << std::endl;
-				mssgInfo << tcpSocketManager->DISCONNECT << username << *message;
-				tcpSocketManager->ClientSend(mssgInfo);
-				break;
-			default:
-				break;
-			}
-
-			applicationRunning = false;
-			message->clear();
-			return false;
-		}
-		else
-		{
-			switch (mode)
-			{
-			case SERVER:
-				tcpSocketManager->ServerSendAll(*message);
-				break;
-			case CLIENT:
-				if (!hasLogedIn)
-				{
-					username = *message;
-					hasLogedIn = true;
-					mssgInfo << tcpSocketManager->LOGIN << username << *message;
-				}
-				else
-				{
-					mssgInfo << tcpSocketManager->MESSAGE << username << *message;
-				}
-				tcpSocketManager->ClientSend(mssgInfo);
-				break;
-			default:
-				break;
-			}
-			message->clear();
-		}
-	}
-
-	return true;
 }
 
 void Server()
 {
 	std::cout << "Server mode running" << std::endl;
 
-	TCPSocketManager tcpSocketManager;
+	TCPServer tcpServer;
 
 	sf::Packet infoPacket;
 	std::string sendMessage, receiveMessage;
+	int clientID = 1;
 
 	// Logic for receiving
-	std::thread tcpScoketListen(OpenListener, &tcpSocketManager);
+	std::thread tcpScoketListen(OpenListener, &tcpServer);
 	tcpScoketListen.detach();
 
 	std::thread getLines(GetLineFromCin, &sendMessage);
@@ -124,14 +60,10 @@ void Server()
 
 	while (applicationRunning)
 	{
-		// Logic for sending
-		if (SendLogic(&tcpSocketManager, Mode::SERVER, infoPacket, &sendMessage) != true)
-		{
-			break;
-		}
+
 	}
 
-	tcpSocketManager.Disconnect();
+	tcpServer.Disconnect();
 }
 
 void Client()
@@ -148,11 +80,16 @@ void Client()
 	std::string sendMessage, receiveMessage;
 
 	// Logic for receiving
-	std::thread tcpSocketReceive(OpenReceiveThread, &tcpClient, &receiveMessage);
+	std::thread tcpSocketReceive(OpenReceiveThread, &tcpClient);
 	tcpSocketReceive.detach();
 
 	std::thread getLines(GetLineFromCin, &sendMessage);
 	getLines.detach();
+
+	if (tcpClient.GetID() == 0)
+	{
+		tcpClient.SendLogin();
+	}
 
 	while (applicationRunning)
 	{
@@ -162,10 +99,9 @@ void Client()
 			break;
 		}
 
-		// Logic for sending
-		if (tcpClient.SendMessage(infoPacket, &sendMessage) != true)
+		if (sendMessage.size() != 0)
 		{
-			break;
+			// Send message
 		}
 	}
 
@@ -176,8 +112,6 @@ void Client()
 
 void main()
 {
-	ChessBoard board;
-	board.run();
 
 	int server_mode;
 	std::string mode_str;
@@ -193,4 +127,6 @@ void main()
 	{
 		Client();
 	}
+	ChessBoard board;
+	board.run();
 }

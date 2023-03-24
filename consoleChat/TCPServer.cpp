@@ -2,7 +2,6 @@
 
 sf::Socket::Status TCPServer::Listen(unsigned short port, sf::IpAddress ip)
 {
-
     // Make the selector wait for data on any socket
     if (selector.wait())
     {
@@ -14,7 +13,7 @@ sf::Socket::Status TCPServer::Listen(unsigned short port, sf::IpAddress ip)
             if (listener.accept(*client) == sf::Socket::Done)
             {
                 // Add the new client to the clients list
-                users[users.size() + 1] = client;
+                users[++idValue] = client;
 
                 // Add the new client to the selector so that we will
                 // be notified when he sends something
@@ -50,26 +49,28 @@ sf::Socket::Status TCPServer::Listen(unsigned short port, sf::IpAddress ip)
     return sf::Socket::Done;
 }
 
-void TCPServer::Send(sf::Packet sendPacket, int id)
+bool TCPServer::Send(sf::Packet sendPacket, int id)
 {
     if (users[id] != nullptr)
     {
         sf::Socket::Status status = users[id]->send(sendPacket);
         std::cout << "Message sent" << std::endl;
+
         if (status != sf::Socket::Status::Done)
         {
             // Error when sending data
             std::cout << "Error sending message" << std::endl;
-            return;
+            return false;
         }
     }
     else
     {
         std::cout << "Error user ID invalid" << std::endl;
-        return;
+        return false;
     }
 
     sendPacket.clear();
+    return true;
 }
 
 void TCPServer::SendAll(std::string message)
@@ -82,7 +83,6 @@ void TCPServer::SendAll(std::string message)
         SendAll("DISCONNECT");
         Disconnect();
     }
-
 
     // The listener socket is not ready, test all other sockets (the clients)
     for (auto it = users.begin(); it != users.end(); ++it)
@@ -99,36 +99,31 @@ void TCPServer::SendAll(std::string message)
         }
     }
 
-    //for each (sf::TcpSocket * targetSocket in sockets)
-    //{
-    //    sf::Socket::Status status = targetSocket->send(packet);
-    //    std::cout << "Message sent: " << message << std::endl;
-    //    if (status != sf::Socket::Status::Done)
-    //    {
-    //        // Error when sending data
-    //        std::cout << "Error sending message" << std::endl;
-    //        return;
-    //    }
-    //}
-
     packet.clear();
 }
 
-void TCPServer::Receive(sf::Packet receivedPacket, int id = 0)
+void TCPServer::Receive(sf::Packet receivedPacket, int id)
 {
-    //auto findResult;
+    sf::Packet sendPacket; // used for login
+
     int tempMode;
     int tempID;
     std::string tempMssg;
-    receivedPacket >> tempMode >> tempID >> tempMssg;
+    receivedPacket >> tempMode >> tempID;
 
-    sf::Packet sendPacket;
+    // Check if user exists
+    if (users.find(tempID) == users.end() && tempMode != LOGIN)
+        return;
+
+    // Extract data
+    receivedPacket >> tempMssg;
 
     switch (tempMode)
     {
     case TCPSocketManager::LOGIN:
-        sendPacket << LOGIN << id;
-        Send(sendPacket, id);
+        sendPacket << LOGIN << idValue;
+
+        Send(sendPacket, idValue);
         std::cout << "New user" << std::endl;
         break;
     case TCPSocketManager::MESSAGE:

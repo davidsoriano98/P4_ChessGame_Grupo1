@@ -11,13 +11,15 @@ class TCPClient : TCPSocketManager
 {
 private:
 	sf::TcpSocket* serverSocket;
-	int ID = 0;
+	unsigned int ID = 0;
 
 public:
 	void Send(sf::Packet infoPack);
-	void Receive(std::string* mssg);
+	void SendLogin();
+	void Receive();
 	bool SendMessage(sf::Packet mssgInfo, std::string* message);
 	sf::Socket::Status Connect(unsigned short port, sf::IpAddress ip);
 	void Disconnect();
+	int GetID();
 };
 

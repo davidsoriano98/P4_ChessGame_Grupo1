@@ -15,9 +15,11 @@ private:
     sf::SocketSelector selector;
     std::map<int, sf::TcpSocket*> users;
 
+    unsigned int idValue = 0;
+
 public:
     sf::Socket::Status Listen(unsigned short port, sf::IpAddress ip);
-    void Send(sf::Packet sendPacket, int id);
+    bool Send(sf::Packet sendPacket, int id);
     void SendAll(std::string message);
     void Receive(sf::Packet receivedPacket, int id);
     void ClientDisconected(int id);

@@ -14,30 +14,49 @@ void TCPClient::Send(sf::Packet infoPack)
     infoPack.clear();
 }
 
-void TCPClient::Receive(std::string* mssg)
+void TCPClient::SendLogin()
+{
+    sf::Packet infoPack;
+    infoPack << LOGIN << ID;
+
+    Send(infoPack);
+}
+
+void TCPClient::Receive()
 {
     sf::Packet packet;
-
     sf::Socket::Status status = serverSocket->receive(packet);
+
     if (status != sf::Socket::Status::Done)
     {
         std::cout << "Error receiving message" << std::endl;
         return;
     }
-
-    std::string masaje;
-    packet >> masaje;
-
-    // Se procesaelmensaje
-    if (masaje.size() > 0)
+    else
     {
-        if (masaje == "DISCONNECT")
+        int tempMode;
+        std::string message;
+        packet >> tempMode >> message;
+
+        switch (tempMode)
         {
+        case TCPSocketManager::LOGIN:
+            ID = (unsigned int)std::stoi(message);
+            break;
+
+        case TCPSocketManager::MESSAGE:
+            break;
+
+        case TCPSocketManager::DISCONNECT:
             // Manages the desconection
             Disconnect();
+            break;
+
+        default:
+            break;
         }
-        std::cout << "Received message: " << masaje << std::endl;
-        mssg->assign(masaje);
+
+        std::cout << "Received message: " << message << std::endl;
     }
 }
 
@@ -90,4 +109,9 @@ sf::Socket::Status TCPClient::Connect(unsigned short port, sf::IpAddress ip)
 void TCPClient::Disconnect()
 {
     serverSocket->disconnect();
+}
+
+int TCPClient::GetID()
+{
+    return ID;
 }
