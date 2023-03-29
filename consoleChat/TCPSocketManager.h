@@ -13,6 +13,7 @@ public:
     {
         LOGIN,
         MESSAGE,
+        START_GAME,
         DISCONNECT,
         COUNT
     };

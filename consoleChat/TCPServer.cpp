@@ -121,10 +121,11 @@ void TCPServer::Receive(sf::Packet receivedPacket, int id)
     switch (tempMode)
     {
     case TCPSocketManager::LOGIN:
-        sendPacket << LOGIN << idValue;
+        sendPacket << (int)TCPSocketManager::LOGIN << idValue;
 
         Send(sendPacket, idValue);
         std::cout << "New user" << std::endl;
+
         break;
     case TCPSocketManager::MESSAGE:
         if (tempMssg.size() > 0)
@@ -168,5 +169,30 @@ void TCPServer::AddListener(unsigned short port)
 {
     listener.listen(port);
     selector.add(listener);
+}
+
+void TCPServer::NewWaitingUser(int newUserID)
+{
+    if (waitingUsersIDs.size() > 0)
+    {
+        bool IsStartingFirst = (0 + (rand() % (1 - 0 + 1)) == 1);
+
+        // Joint 2 clients
+        playingUsersIDs.push_back(std::make_pair(waitingUsersIDs.front(), newUserID));
+        waitingUsersIDs.pop_front();
+
+        sf::Packet infoPacket;
+        infoPacket << TCPSocketManager::START_GAME << playingUsersIDs.back().first << IsStartingFirst;
+        Send(infoPacket, playingUsersIDs.back().first);
+
+        infoPacket.clear(); 
+        infoPacket << TCPSocketManager::START_GAME << playingUsersIDs.back().second << !IsStartingFirst;
+        Send(infoPacket, playingUsersIDs.back().second);
+    }
+    else
+    {
+        // Send to waiting
+        waitingUsersIDs.push_back(newUserID);
+    }
 }
 

@@ -17,7 +17,7 @@ void ChessBoard::loadtextures(Texture texture[64]) {
             texture[i].loadFromFile("images/blackQueen.png");
         if (spritepositions[i] == 4)
             texture[i].loadFromFile("images/blackKing.png");
-        if (spritepositions[i] >= 8 & spritepositions[i] <= 15)
+        if (spritepositions[i] >= 8 && spritepositions[i] <= 15)
             texture[i].loadFromFile("images/blackPawn.png");
         if (spritepositions[i] == 63 || spritepositions[i] == 56)
             texture[i].loadFromFile("images/whiteRook.png");
@@ -29,7 +29,7 @@ void ChessBoard::loadtextures(Texture texture[64]) {
             texture[i].loadFromFile("images/whiteQueen.png");
         if (spritepositions[i] == 60)
             texture[i].loadFromFile("images/whiteKing.png");
-        if (spritepositions[i] >= 48 & spritepositions[i] <= 55)
+        if (spritepositions[i] >= 48 && spritepositions[i] <= 55)
             texture[i].loadFromFile("images/whitePawn.png");
     }
 }
@@ -97,7 +97,7 @@ bool ChessBoard::updateboard(int n, int j, sf::RectangleShape rectangle[64], sf:
 
 
 
-void ChessBoard::run()
+void ChessBoard::Run()
 {
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGTH), "Chess The Game Of Kings!");
     sf::RectangleShape rectangle[64];
@@ -128,7 +128,7 @@ void ChessBoard::run()
             if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
                 // Black pieces turn
                 for (int j = 0; j < 64; ++j) {
-                    if (turn % 2 == 0 & board[j] < 0) {
+                    if (turn % 2 == 0 && board[j] < 0) {
                         if (rectangle[j].getGlobalBounds().contains(pos.x, pos.y))
                         {
                             n = j;
@@ -142,7 +142,7 @@ void ChessBoard::run()
                 }
                 // White pieces turn
                 for (int j = 0; j < 64; ++j) {
-                    if (turn % 2 != 0 & board[j] > 0) {
+                    if (turn % 2 != 0 && board[j] > 0) {
                         if (rectangle[j].getGlobalBounds().contains(pos.x, pos.y))
                         {
                             n = j;

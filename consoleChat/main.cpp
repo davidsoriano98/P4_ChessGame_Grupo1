@@ -3,6 +3,7 @@
 #include <iostream> 
 #include <string>
 #include <thread>
+#include <random>
 #include "TCPSocketManager.h"
 #include "TCPClient.h"
 #include "TCPServer.h"
@@ -41,6 +42,12 @@ void OpenListener(TCPServer* _tcpServer)
 	}
 }
 
+void OpenBoardGame()
+{
+	ChessBoard board;
+	board.Run();
+}
+
 void Server()
 {
 	std::cout << "Server mode running" << std::endl;
@@ -72,6 +79,7 @@ void Client()
 	
 	TCPClient tcpClient;
 	TCPSocketManager tcpSocketManager;
+	bool createdBoardThread = false;
 
 	// client connect
 	sf::Socket::Status status = tcpClient.Connect(PORT, IP);
@@ -103,6 +111,12 @@ void Client()
 		{
 			// Send message
 		}
+
+		if (!createdBoardThread && tcpClient.GetHasRival())
+		{
+			std::thread boardGameThread(OpenBoardGame);
+			createdBoardThread = true;
+		}
 	}
 
 	sendMessage = "exit";
@@ -112,6 +126,7 @@ void Client()
 
 void main()
 {
+	std::srand(time(0));
 
 	int server_mode;
 	std::string mode_str;
@@ -127,6 +142,4 @@ void main()
 	{
 		Client();
 	}
-	ChessBoard board;
-	board.run();
 }

@@ -15,6 +15,9 @@ private:
     sf::SocketSelector selector;
     std::map<int, sf::TcpSocket*> users;
 
+    std::list<int> waitingUsersIDs;
+    std::list<std::pair<int, int>> playingUsersIDs;
+
     unsigned int idValue = 0;
 
 public:
@@ -25,5 +28,5 @@ public:
     void ClientDisconected(int id);
     void Disconnect();
     void AddListener(unsigned short port);
+    void NewWaitingUser(int newUserID);
 };
-

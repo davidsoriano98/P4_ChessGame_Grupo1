@@ -35,19 +35,37 @@ void TCPClient::Receive()
     else
     {
         int tempMode;
-        std::string message;
-        packet >> tempMode >> message;
+        int identification;
+        packet >> tempMode >> identification;
 
         switch (tempMode)
         {
         case TCPSocketManager::LOGIN:
-            ID = (unsigned int)std::stoi(message);
+            ID = identification;
+            std::cout << "Received ID: " << ID << std::endl;
             break;
 
         case TCPSocketManager::MESSAGE:
+            if (identification != ID)
+                return;
+            // Handle mssg
+            break;
+
+        case TCPSocketManager::START_GAME:
+            if (identification != ID)
+                return;
+
+            hasRival = true;
+            bool firstMove;
+            packet >> firstMove;
+
+            // NEED TO SAVE THINGS
+
             break;
 
         case TCPSocketManager::DISCONNECT:
+            if (identification != ID)
+                return;
             // Manages the desconection
             Disconnect();
             break;
@@ -56,7 +74,7 @@ void TCPClient::Receive()
             break;
         }
 
-        std::cout << "Received message: " << message << std::endl;
+        std::cout << "Received message :^)" << std::endl;
     }
 }
 
@@ -114,4 +132,9 @@ void TCPClient::Disconnect()
 int TCPClient::GetID()
 {
     return ID;
+}
+
+bool TCPClient::GetHasRival()
+{
+    return hasRival;
 }

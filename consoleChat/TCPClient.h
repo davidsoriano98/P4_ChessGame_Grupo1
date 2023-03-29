@@ -13,6 +13,8 @@ private:
 	sf::TcpSocket* serverSocket;
 	unsigned int ID = 0;
 
+	bool hasRival;
+
 public:
 	void Send(sf::Packet infoPack);
 	void SendLogin();
@@ -21,5 +23,6 @@ public:
 	sf::Socket::Status Connect(unsigned short port, sf::IpAddress ip);
 	void Disconnect();
 	int GetID();
+	bool GetHasRival();
 };
 
