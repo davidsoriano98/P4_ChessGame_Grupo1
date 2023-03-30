@@ -10,9 +10,9 @@ private:
 public:
 	Piece(int Chess[]);
 
-	bool isTileOccupied(int tile);
+	bool IsTileOccupied(int tile);
 
-	std::string pieceAlliance(int tile, std::string alliance);
+	std::string PieceAlliance(int tile, std::string alliance);
 
 };
 
@@ -38,7 +38,7 @@ public:
 
 	//--------------------EXCLUSIONS
 
-	std::vector<int> getLegalMoves();
+	std::vector<int> GetLegalMoves();
 };
 
 
@@ -67,7 +67,7 @@ public:
 
 	//--------------------EXCLUSIONS
 
-	std::vector<int> getLegalMoves();
+	std::vector<int> GetLegalMoves();
 };
 
 class pawn
@@ -95,11 +95,11 @@ public:
 
 	//-----------------CALCULATIONS
 
-	std::vector<int> getLegalMoves();
+	std::vector<int> GetLegalMoves();
 
 };
 
-class queen
+class Queen
 {
 private:
 	const int CANDIDATE_MOVE_COORDINATES[8] = { -8, -1, 1, 8, -9, -7, 9, 7 };
@@ -108,24 +108,24 @@ private:
 	int arrOfChess[64]{};
 
 public:
-	queen(const int Tile, std::string alliance, int chess[]);
+	Queen(const int Tile, std::string alliance, int chess[]);
 
-	bool isValidTileCoordinate(int currentCandidate);
+	bool IsValidTileCoordinate(int currentCandidate);
 
 	//---------------------------EXCLUSIONS
 
-	bool firstColum(int tile, int offset);
+	bool FirstColum(int tile, int offset);
 
-	bool eighthColum(int tile, int offset);
+	bool EighthColum(int tile, int offset);
 
 	//---------------------------CALCULATIONS
 
-	std::vector<int> getLegalMoves();
+	std::vector<int> GetLegalMoves();
 
 };
 
 
-class rook
+class Rook
 {
 private:
 	const int CANDIDATE_MOVE_COORDINATES[4] = { -8, -1, 1, 8 };
@@ -134,23 +134,23 @@ private:
 	int arrOfChess[64];
 
 public:
-	rook(const int Tile, std::string alliance, int chess[]);
+	Rook(const int Tile, std::string alliance, int chess[]);
 
-	bool isValidTileCoordinate(int currentCandidate);
+	bool IsValidTileCoordinate(int currentCandidate);
 
 	//---------------------------EXCLUSIONS
 
-	bool firstColum(int tile, int offset);
+	bool FirstColum(int tile, int offset);
 
-	bool eighthColum(int tile, int offset);
+	bool EighthColum(int tile, int offset);
 
 	//---------------------------CALCULATIONS
 
-	std::vector<int> getLegalMoves();
+	std::vector<int> GetLegalMoves();
 
 };
 
-class bishop
+class Bishop
 {
 private:
 	const int CANDIDATE_MOVE_COORDINATES[4] = { -9, -7, 9, 7 };
@@ -159,30 +159,30 @@ private:
 	int arrOfChess[64];
 
 public:
-	bishop(int pieceTile, std::string alliance, int chess[]);
+	Bishop(int pieceTile, std::string alliance, int chess[]);
 
-	bool isValidTileCoordinate(int currentCandidate);
+	bool IsValidTileCoordinate(int currentCandidate);
 
 	//----------------------------Exclusions
 
-	bool firstColum(int pieceTile, int offset);
+	bool FirstColum(int pieceTile, int offset);
 
-	bool eighthColum(int pieceTile, int offset);
+	bool EighthColum(int pieceTile, int offset);
 
 	//----------------------------CALCULATIONS
 
-	std::vector<int> getLegalMoves();
+	std::vector<int> GetLegalMoves();
 };
 
 class Identity {
 public:
-	bool chessKing(int initialTile, int finalTile, std::string alliance, int* arrOfChess);
-	bool chessQueen(int initialTile, int finalTile, std::string alliance, int* arrOfChess);
-	bool chessPawn(int initialTile, int finalTile, std::string alliance, int* arrOfChess);
-	bool chessRook(int initialTile, int finalTile, std::string alliance, int* arrOfChess);
-	bool chessBishop(int initialTile, int finalTile, std::string alliance, int* arrOfChess);
-	bool chessKnight(int initialTile, int finalTile, std::string alliance, int* arrOfChess);
-	std::string checkAlliance(int piece);
-	bool identifier(int initialTile, int finalTile, int piece, int* arrOfChess);
+	bool ChessKing(int initialTile, int finalTile, std::string alliance, int* arrOfChess);
+	bool ChessQueen(int initialTile, int finalTile, std::string alliance, int* arrOfChess);
+	bool ChessPawn(int initialTile, int finalTile, std::string alliance, int* arrOfChess);
+	bool ChessRook(int initialTile, int finalTile, std::string alliance, int* arrOfChess);
+	bool ChessBishop(int initialTile, int finalTile, std::string alliance, int* arrOfChess);
+	bool ChessKnight(int initialTile, int finalTile, std::string alliance, int* arrOfChess);
+	std::string CheckAlliance(int piece);
+	bool Identifier(int initialTile, int finalTile, int piece, int* arrOfChess);
 public:
 };

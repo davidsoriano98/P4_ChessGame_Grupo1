@@ -2,6 +2,8 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <fstream>
+#include <fstream>
+#include "TCPClient.h"
 #include "Pieces.h"
 
 using namespace sf;
@@ -35,6 +37,6 @@ class ChessBoard{
     void loadtextures(Texture texture[64]);
     void loadboard(Texture texture[64],RectangleShape rectangle[64],Sprite sprite[64]);
     bool updateboard(int n, int j, sf::RectangleShape rectangle[64], sf::Sprite sprite[65]);
-    void Run();
+    void Run(TCPClient client);
   
 };

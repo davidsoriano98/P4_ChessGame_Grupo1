@@ -11,14 +11,14 @@ Piece::Piece(int* Chess) {
 	}
 }
 
-bool Piece::isTileOccupied(int tile) {
+bool Piece::IsTileOccupied(int tile) {
 	if (arrayOfChess[tile] == 0)
 		return false;
 	else
 		return true;
 }
 
-std::string Piece::pieceAlliance(int tile, std::string alliance) {
+std::string Piece::PieceAlliance(int tile, std::string alliance) {
 	if (alliance == "white")
 	{
 		if (arrayOfChess[tile] < 0)
@@ -93,7 +93,7 @@ bool king::eighthColum(int pieceTile, int offset) {
     return temp && (offset == -7 || offset == 1 || offset == 9);
 }
 
-std::vector<int> king::getLegalMoves() {
+std::vector<int> king::GetLegalMoves() {
 
     Piece destinationTile(arrOfChess);
     int possibleDestinationTile = this->pieceTile;
@@ -110,8 +110,8 @@ std::vector<int> king::getLegalMoves() {
         possibleDestinationTile = this->pieceTile + offset;
         if (isValidTileCoordinate(possibleDestinationTile))
         {
-            if (destinationTile.isTileOccupied(possibleDestinationTile)) {
-                if (this->alliance != destinationTile.pieceAlliance(possibleDestinationTile, alliance)) {
+            if (destinationTile.IsTileOccupied(possibleDestinationTile)) {
+                if (this->alliance != destinationTile.PieceAlliance(possibleDestinationTile, alliance)) {
                     legalMoves.push_back(possibleDestinationTile);
                 }
             }
@@ -213,7 +213,7 @@ bool knight::eighthColum(int pieceTile, int offset) {
     return temp && ((offset == -15) || (offset == -6) || (offset == 10) || (offset == 17));
 }
 
-std::vector<int> knight::getLegalMoves() {
+std::vector<int> knight::GetLegalMoves() {
 
     Piece destinationTile(arrOfChess);
     int possibleDestinationTile;
@@ -230,8 +230,8 @@ std::vector<int> knight::getLegalMoves() {
         possibleDestinationTile = this->pieceTile + offset;
         if (isValidTileCoordinate(possibleDestinationTile))
         {
-            if (destinationTile.isTileOccupied(possibleDestinationTile)) {
-                if (this->alliance != destinationTile.pieceAlliance(possibleDestinationTile, this->alliance)) {
+            if (destinationTile.IsTileOccupied(possibleDestinationTile)) {
+                if (this->alliance != destinationTile.PieceAlliance(possibleDestinationTile, this->alliance)) {
                     legalMoves.push_back(possibleDestinationTile);
                 }
             }
@@ -326,7 +326,7 @@ bool pawn::isFirstMove(int tile) {
     return false;
 }
 
-std::vector<int> pawn::getLegalMoves() {
+std::vector<int> pawn::GetLegalMoves() {
     Piece destinationTile(arrOfChess);
     int possibleDestinationTile;
     std::vector<int> legalMoves;
@@ -340,7 +340,7 @@ std::vector<int> pawn::getLegalMoves() {
             continue;
         }
 
-        if (offset == 8 && !destinationTile.isTileOccupied(possibleDestinationTile))
+        if (offset == 8 && !destinationTile.IsTileOccupied(possibleDestinationTile))
         {
             legalMoves.push_back(possibleDestinationTile);
         }
@@ -350,7 +350,7 @@ std::vector<int> pawn::getLegalMoves() {
         {
             int behindCandidate = this->pieceTile + (this->direction * 8);
 
-            if (!destinationTile.isTileOccupied(behindCandidate) && !destinationTile.isTileOccupied(possibleDestinationTile))
+            if (!destinationTile.IsTileOccupied(behindCandidate) && !destinationTile.IsTileOccupied(possibleDestinationTile))
             {
                 legalMoves.push_back(possibleDestinationTile);
             }
@@ -359,9 +359,9 @@ std::vector<int> pawn::getLegalMoves() {
 
         if (offset == 7 && !((eighthColum(this->pieceTile) && this->alliance == "white") || (firstColum(this->pieceTile) && this->alliance == "black")))
         {
-            if (destinationTile.isTileOccupied(possibleDestinationTile))
+            if (destinationTile.IsTileOccupied(possibleDestinationTile))
             {
-                if (this->alliance != destinationTile.pieceAlliance(possibleDestinationTile, alliance))
+                if (this->alliance != destinationTile.PieceAlliance(possibleDestinationTile, alliance))
                 {
                     legalMoves.push_back(possibleDestinationTile);
                 }
@@ -369,9 +369,9 @@ std::vector<int> pawn::getLegalMoves() {
         }
         if (offset == 9 && !((firstColum(this->pieceTile) && this->alliance == "white") || (eighthColum(this->pieceTile) && this->alliance == "black")))
         {
-            if (destinationTile.isTileOccupied(possibleDestinationTile))
+            if (destinationTile.IsTileOccupied(possibleDestinationTile))
             {
-                if (this->alliance != destinationTile.pieceAlliance(possibleDestinationTile, alliance))
+                if (this->alliance != destinationTile.PieceAlliance(possibleDestinationTile, alliance))
                 {
                     legalMoves.push_back(possibleDestinationTile);
                 }
@@ -384,7 +384,7 @@ std::vector<int> pawn::getLegalMoves() {
 }
 
 
-queen::queen(const int Tile, std::string alliance, int chess[]) {
+Queen::Queen(const int Tile, std::string alliance, int chess[]) {
     for (int i = 0; i < 64; ++i) {
         arrOfChess[i] = chess[i];
     }
@@ -392,11 +392,11 @@ queen::queen(const int Tile, std::string alliance, int chess[]) {
     this->alliance = std::move(alliance);
 }
 
-bool queen::isValidTileCoordinate(int currentCandidate) {
+bool Queen::IsValidTileCoordinate(int currentCandidate) {
     return currentCandidate >= 0 && currentCandidate < 64;
 }
 
-bool queen::firstColum(int tile, int offset) {
+bool Queen::FirstColum(int tile, int offset) {
     int firstColumArr[] = { 0,8,16,24,32,40,43,56 };
     bool temp;
 
@@ -415,7 +415,7 @@ bool queen::firstColum(int tile, int offset) {
     return temp && (offset == -1 || offset == 7 || offset == -9);
 }
 
-bool queen::eighthColum(int tile, int offset) {
+bool Queen::EighthColum(int tile, int offset) {
     int eighthColumArr[] = { 7,15,23,31,39,47,55,63 };
     bool temp;
 
@@ -434,7 +434,7 @@ bool queen::eighthColum(int tile, int offset) {
     return temp && (offset == 1 || offset == -7 || offset == 9);
 }
 
-std::vector<int> queen::getLegalMoves() {
+std::vector<int> Queen::GetLegalMoves() {
 
     Piece destinationTile(arrOfChess);
     int possibleDestinationTile;
@@ -447,24 +447,24 @@ std::vector<int> queen::getLegalMoves() {
                 {
                     continue;
                 }*/
-        while (isValidTileCoordinate(possibleDestinationTile)) {
+        while (IsValidTileCoordinate(possibleDestinationTile)) {
 
             int temp = possibleDestinationTile;
             possibleDestinationTile += offset;
-            if (firstColum(temp, offset) || eighthColum(temp, offset))
+            if (FirstColum(temp, offset) || EighthColum(temp, offset))
             {
                 continue;
             }
 
-            if (isValidTileCoordinate(possibleDestinationTile))
+            if (IsValidTileCoordinate(possibleDestinationTile))
             {
-                if (!destinationTile.isTileOccupied(possibleDestinationTile))
+                if (!destinationTile.IsTileOccupied(possibleDestinationTile))
                 {
                     legalMoves.push_back(possibleDestinationTile);
                 }
                 else
                 {
-                    if (!(this->alliance == destinationTile.pieceAlliance(possibleDestinationTile, alliance)))
+                    if (!(this->alliance == destinationTile.PieceAlliance(possibleDestinationTile, alliance)))
                     {
                         legalMoves.push_back(possibleDestinationTile);
                     }
@@ -477,7 +477,7 @@ std::vector<int> queen::getLegalMoves() {
     return legalMoves;
 }
 
-rook::rook(const int Tile, std::string alliance, int chess[]) {
+Rook::Rook(const int Tile, std::string alliance, int chess[]) {
     for (int i = 0; i < 64; ++i) {
         arrOfChess[i] = chess[i];
     }
@@ -485,11 +485,11 @@ rook::rook(const int Tile, std::string alliance, int chess[]) {
     this->alliance = alliance;
 }
 
-bool rook::isValidTileCoordinate(int currentCandidate) {
+bool Rook::IsValidTileCoordinate(int currentCandidate) {
     return currentCandidate >= 0 && currentCandidate < 64;
 }
 
-bool rook::firstColum(int tile, int offset) {
+bool Rook::FirstColum(int tile, int offset) {
     int firstColumArr[] = { 0,8,16,24,32,40,43,56 };
     bool temp;
 
@@ -508,7 +508,7 @@ bool rook::firstColum(int tile, int offset) {
     return temp && (offset == -1);
 }
 
-bool rook::eighthColum(int tile, int offset) {
+bool Rook::EighthColum(int tile, int offset) {
     int eighthColumArr[] = { 7,15,23,31,39,47,55,63 };
     bool temp;
 
@@ -569,7 +569,7 @@ bool rook::eighthColum(int tile, int offset) {
 //    return legalMoves;
 //}
 
-std::vector<int> rook::getLegalMoves() {
+std::vector<int> Rook::GetLegalMoves() {
 
     Piece destinationTile(arrOfChess);
     int possibleDestinationTile;
@@ -578,26 +578,26 @@ std::vector<int> rook::getLegalMoves() {
     {
         possibleDestinationTile = this->pieceTile;
 
-        if (firstColum(possibleDestinationTile, offset) || eighthColum(possibleDestinationTile, offset))
+        if (FirstColum(possibleDestinationTile, offset) || EighthColum(possibleDestinationTile, offset))
         {
             continue;
         }
-        while (isValidTileCoordinate(possibleDestinationTile)) {
+        while (IsValidTileCoordinate(possibleDestinationTile)) {
             int temp = possibleDestinationTile;
             possibleDestinationTile += offset;
-            if (firstColum(temp, offset) || eighthColum(temp, offset))
+            if (FirstColum(temp, offset) || EighthColum(temp, offset))
             {
                 continue;
             }
-            if (isValidTileCoordinate(possibleDestinationTile))
+            if (IsValidTileCoordinate(possibleDestinationTile))
             {
-                if (!destinationTile.isTileOccupied(possibleDestinationTile))
+                if (!destinationTile.IsTileOccupied(possibleDestinationTile))
                 {
                     legalMoves.push_back(possibleDestinationTile);
                 }
                 else
                 {
-                    if (!(this->alliance == destinationTile.pieceAlliance(possibleDestinationTile, this->alliance)))
+                    if (!(this->alliance == destinationTile.PieceAlliance(possibleDestinationTile, this->alliance)))
                     {
                         legalMoves.push_back(possibleDestinationTile);
                     }
@@ -613,7 +613,7 @@ std::vector<int> rook::getLegalMoves() {
 
 
 
-bishop::bishop(int pieceTile, std::string alliance, int chess[]) {
+Bishop::Bishop(int pieceTile, std::string alliance, int chess[]) {
     for (int i = 0; i < 64; ++i) {
         arrOfChess[i] = chess[i];
     }
@@ -621,11 +621,11 @@ bishop::bishop(int pieceTile, std::string alliance, int chess[]) {
     this->alliance = alliance;
 }
 
-bool bishop::isValidTileCoordinate(int currentCandidate) {
+bool Bishop::IsValidTileCoordinate(int currentCandidate) {
     return currentCandidate >= 0 && currentCandidate < 64;
 }
 
-bool bishop::firstColum(int pieceTile, int offset) {
+bool Bishop::FirstColum(int pieceTile, int offset) {
     int firstColumArr[] = { 0,8,16,24,32,40,43,56 };
     bool temp = false;
 
@@ -643,7 +643,7 @@ bool bishop::firstColum(int pieceTile, int offset) {
     return temp && (offset == 7 || offset == -9);
 }
 
-bool bishop::eighthColum(int pieceTile, int offset) {
+bool Bishop::EighthColum(int pieceTile, int offset) {
     int eighthColumArr[] = { 7,15,23,31,39,47,55,63 };
     bool temp = false;
 
@@ -661,7 +661,7 @@ bool bishop::eighthColum(int pieceTile, int offset) {
     return temp && (offset == -7 || offset == 9);
 }
 
-std::vector<int> bishop::getLegalMoves() {
+std::vector<int> Bishop::GetLegalMoves() {
 
     Piece destinationTile(arrOfChess);
     int possibleDestinationTile;
@@ -670,26 +670,26 @@ std::vector<int> bishop::getLegalMoves() {
     {
         possibleDestinationTile = this->pieceTile;
 
-        if (firstColum(possibleDestinationTile, offset) || eighthColum(possibleDestinationTile, offset))
+        if (FirstColum(possibleDestinationTile, offset) || EighthColum(possibleDestinationTile, offset))
         {
             continue;
         }
-        while (isValidTileCoordinate(possibleDestinationTile)) {
+        while (IsValidTileCoordinate(possibleDestinationTile)) {
             int temp = possibleDestinationTile;
             possibleDestinationTile += offset;
-            if (firstColum(temp, offset) || eighthColum(temp, offset))
+            if (FirstColum(temp, offset) || EighthColum(temp, offset))
             {
                 continue;
             }
-            if (isValidTileCoordinate(possibleDestinationTile))
+            if (IsValidTileCoordinate(possibleDestinationTile))
             {
-                if (!destinationTile.isTileOccupied(possibleDestinationTile))
+                if (!destinationTile.IsTileOccupied(possibleDestinationTile))
                 {
                     legalMoves.push_back(possibleDestinationTile);
                 }
                 else
                 {
-                    if (!(this->alliance == destinationTile.pieceAlliance(possibleDestinationTile, this->alliance)))
+                    if (!(this->alliance == destinationTile.PieceAlliance(possibleDestinationTile, this->alliance)))
                     {
                         legalMoves.push_back(possibleDestinationTile);
                     }
@@ -702,11 +702,11 @@ std::vector<int> bishop::getLegalMoves() {
     return legalMoves;
 }
 
-bool Identity::chessKing(int initialTile, int finalTile, std::string alliance, int* arrOfChess) {
+bool Identity::ChessKing(int initialTile, int finalTile, std::string alliance, int* arrOfChess) {
     king king1(initialTile, alliance, arrOfChess);
 
     std::vector<int> v1;
-    v1 = king1.getLegalMoves();
+    v1 = king1.GetLegalMoves();
 
 
     for (std::vector<int>::iterator it1 = v1.begin(); it1 != v1.end(); ++it1) {
@@ -717,12 +717,12 @@ bool Identity::chessKing(int initialTile, int finalTile, std::string alliance, i
     return false;
 }
 
-bool Identity::chessQueen(int initialTile, int finalTile, std::string alliance, int* arrOfChess) {
+bool Identity::ChessQueen(int initialTile, int finalTile, std::string alliance, int* arrOfChess) {
 
-    queen queen1(initialTile, alliance, arrOfChess);
+    Queen queen1(initialTile, alliance, arrOfChess);
 
     std::vector<int>v2;
-    v2 = queen1.getLegalMoves();
+    v2 = queen1.GetLegalMoves();
 
 
     for (std::vector<int>::iterator it2 = v2.begin(); it2 != v2.end(); ++it2) {
@@ -733,11 +733,11 @@ bool Identity::chessQueen(int initialTile, int finalTile, std::string alliance, 
     return false;
 }
 
-bool Identity::chessPawn(int initialTile, int finalTile, std::string alliance, int* arrOfChess) {
+bool Identity::ChessPawn(int initialTile, int finalTile, std::string alliance, int* arrOfChess) {
     pawn pawn1(initialTile, alliance, arrOfChess);
 
     std::vector<int>v3;
-    v3 = pawn1.getLegalMoves();
+    v3 = pawn1.GetLegalMoves();
 
 
     for (std::vector<int>::iterator it3 = v3.begin(); it3 != v3.end(); ++it3) {
@@ -748,11 +748,11 @@ bool Identity::chessPawn(int initialTile, int finalTile, std::string alliance, i
     return false;
 }
 
-bool Identity::chessRook(int initialTile, int finalTile, std::string alliance, int* arrOfChess) {
-    rook rook1(initialTile, alliance, arrOfChess);
+bool Identity::ChessRook(int initialTile, int finalTile, std::string alliance, int* arrOfChess) {
+    Rook rook1(initialTile, alliance, arrOfChess);
 
     std::vector<int> v4;
-    v4 = rook1.getLegalMoves();
+    v4 = rook1.GetLegalMoves();
 
 
     for (std::vector<int>::iterator it4 = v4.begin(); it4 != v4.end(); ++it4) {
@@ -763,11 +763,11 @@ bool Identity::chessRook(int initialTile, int finalTile, std::string alliance, i
     return false;
 }
 
-bool Identity::chessBishop(int initialTile, int finalTile, std::string alliance, int* arrOfChess) {
-    bishop bishop1(initialTile, alliance, arrOfChess);
+bool Identity::ChessBishop(int initialTile, int finalTile, std::string alliance, int* arrOfChess) {
+    Bishop bishop1(initialTile, alliance, arrOfChess);
 
     std::vector<int> v5;
-    v5 = bishop1.getLegalMoves();
+    v5 = bishop1.GetLegalMoves();
 
 
     for (std::vector<int>::iterator it5 = v5.begin(); it5 != v5.end(); ++it5) {
@@ -778,11 +778,11 @@ bool Identity::chessBishop(int initialTile, int finalTile, std::string alliance,
     return false;
 }
 
-bool Identity::chessKnight(int initialTile, int finalTile, std::string alliance, int* arrOfChess) {
+bool Identity::ChessKnight(int initialTile, int finalTile, std::string alliance, int* arrOfChess) {
     knight knight1(initialTile, alliance, arrOfChess);
 
     std::vector<int> v6;
-    v6 = knight1.getLegalMoves();
+    v6 = knight1.GetLegalMoves();
 
 
     for (std::vector<int>::iterator it6 = v6.begin(); it6 != v6.end(); ++it6) {
@@ -793,34 +793,34 @@ bool Identity::chessKnight(int initialTile, int finalTile, std::string alliance,
     return false;
 }
 
-std::string Identity::checkAlliance(int piece) {
+std::string Identity::CheckAlliance(int piece) {
     if (piece > 0)
         return "white";
     else if (piece < 0)
         return "black";
 }
 
-bool Identity::identifier(int initialTile, int finalTile, int piece, int* arrOfChess)
+bool Identity::Identifier(int initialTile, int finalTile, int piece, int* arrOfChess)
 {
-    std::string alliance = checkAlliance(piece);
+    std::string alliance = CheckAlliance(piece);
 
     if (piece == -1 || piece == 1)
-        return chessRook(initialTile, finalTile, alliance, arrOfChess);
+        return ChessRook(initialTile, finalTile, alliance, arrOfChess);
 
     else if (piece == -2 || piece == 2)
-        return chessKnight(initialTile, finalTile, alliance, arrOfChess);
+        return ChessKnight(initialTile, finalTile, alliance, arrOfChess);
 
     else if (piece == -3 || piece == 3)
-        return chessBishop(initialTile, finalTile, alliance, arrOfChess);
+        return ChessBishop(initialTile, finalTile, alliance, arrOfChess);
 
     else if (piece == -4 || piece == 4)
-        return chessQueen(initialTile, finalTile, alliance, arrOfChess);
+        return ChessQueen(initialTile, finalTile, alliance, arrOfChess);
 
     else if (piece == -5 || piece == 5)
-        return chessKing(initialTile, finalTile, alliance, arrOfChess);
+        return ChessKing(initialTile, finalTile, alliance, arrOfChess);
 
     else if (piece == -6 || piece == 6)
-        return chessPawn(initialTile, finalTile, alliance, arrOfChess);
+        return ChessPawn(initialTile, finalTile, alliance, arrOfChess);
 
 }
 

@@ -38,6 +38,8 @@ void TCPClient::Receive()
         int identification;
         packet >> tempMode >> identification;
 
+        std::string tempString;
+
         switch (tempMode)
         {
         case TCPSocketManager::LOGIN:
@@ -48,7 +50,11 @@ void TCPClient::Receive()
         case TCPSocketManager::MESSAGE:
             if (identification != ID)
                 return;
+
             // Handle mssg
+            packet >> tempString;
+            std::cout << tempString << std::endl;
+
             break;
 
         case TCPSocketManager::START_GAME:
@@ -56,10 +62,7 @@ void TCPClient::Receive()
                 return;
 
             hasRival = true;
-            bool firstMove;
-            packet >> firstMove;
-
-            // NEED TO SAVE THINGS
+            packet >> isMyTurn;
 
             break;
 
@@ -74,7 +77,7 @@ void TCPClient::Receive()
             break;
         }
 
-        std::cout << "Received message :^)" << std::endl;
+        //std::cout << "Received message" << std::endl;
     }
 }
 
@@ -137,4 +140,9 @@ int TCPClient::GetID()
 bool TCPClient::GetHasRival()
 {
     return hasRival;
+}
+
+bool TCPClient::GetIsMyTurn()
+{
+    return isMyTurn;
 }

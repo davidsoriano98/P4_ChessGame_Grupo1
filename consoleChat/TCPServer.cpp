@@ -104,42 +104,29 @@ void TCPServer::SendAll(std::string message)
 
 void TCPServer::Receive(sf::Packet receivedPacket, int id)
 {
-    sf::Packet sendPacket; // used for login
-
     int tempMode;
     int tempID;
-    std::string tempMssg;
     receivedPacket >> tempMode >> tempID;
 
     // Check if user exists
     if (users.find(tempID) == users.end() && tempMode != LOGIN)
         return;
 
-    // Extract data
-    receivedPacket >> tempMssg;
-
     switch (tempMode)
     {
     case TCPSocketManager::LOGIN:
-        sendPacket << (int)TCPSocketManager::LOGIN << idValue;
-
-        Send(sendPacket, idValue);
-        std::cout << "New user" << std::endl;
-
+        ReceiveLogin();
         break;
+
     case TCPSocketManager::MESSAGE:
-        if (tempMssg.size() > 0)
-        {
-            if (tempMssg == "exit")
-            {
-                ClientDisconected(id);
-                return;
-            }
-            std::cout << "Received message" << std::endl;
-
-            //send move to other player
-        }
+        ReceiveMessage(receivedPacket, id);
         break;
+
+    case TCPSocketManager::MAKE_MOVE:
+        ReceiveMakeMove(receivedPacket);
+
+        break;
+
     case TCPSocketManager::DISCONNECT:
         ClientDisconected(id);
         break;
@@ -173,6 +160,7 @@ void TCPServer::AddListener(unsigned short port)
 
 void TCPServer::NewWaitingUser(int newUserID)
 {
+    sf::Packet infoPacket;
     if (waitingUsersIDs.size() > 0)
     {
         bool IsStartingFirst = (0 + (rand() % (1 - 0 + 1)) == 1);
@@ -181,7 +169,7 @@ void TCPServer::NewWaitingUser(int newUserID)
         playingUsersIDs.push_back(std::make_pair(waitingUsersIDs.front(), newUserID));
         waitingUsersIDs.pop_front();
 
-        sf::Packet infoPacket;
+        infoPacket.clear();
         infoPacket << TCPSocketManager::START_GAME << playingUsersIDs.back().first << IsStartingFirst;
         Send(infoPacket, playingUsersIDs.back().first);
 
@@ -193,6 +181,62 @@ void TCPServer::NewWaitingUser(int newUserID)
     {
         // Send to waiting
         waitingUsersIDs.push_back(newUserID);
+
+        infoPacket.clear();
+        infoPacket << TCPSocketManager::MESSAGE << newUserID << "Waiting for opponent";
+        Send(infoPacket, newUserID);
+    }
+}
+
+bool TCPServer::IsMoveValid(int initialTile, int finalTile, int piece, int* chessArray)
+{
+    return identity.Identifier(initialTile, finalTile, piece, chessArray);
+}
+
+void TCPServer::ReceiveLogin()
+{
+    sf::Packet sendPacket;
+    sendPacket << (int)TCPSocketManager::LOGIN << idValue;
+
+    Send(sendPacket, idValue);
+    std::cout << "New user" << std::endl;
+    NewWaitingUser(idValue);
+}
+
+void TCPServer::ReceiveMessage(sf::Packet packet, int id)
+{
+    std::string tempMssg;
+    packet >> tempMssg;
+
+    if (tempMssg.size() > 0)
+    {
+        if (tempMssg == "exit")
+        {
+            ClientDisconected(id);
+            return;
+        }
+        std::cout << "Received message" << std::endl;
+    }
+}
+
+void TCPServer::ReceiveMakeMove(sf::Packet packet)
+{
+    int tempInitialTile;
+    int tempFinalTile;
+    int tempPiece;
+    int* tempChessArray{};
+
+    // Extract data
+    packet >> tempInitialTile >> tempFinalTile >> tempPiece >> *tempChessArray;
+
+    // Check if move is valid
+    if (IsMoveValid(tempInitialTile, tempFinalTile, tempPiece, tempChessArray))
+    {
+        // Inform of valid move & update both boards + change turn
+    }
+    else
+    {
+        // Inform of invalid move
     }
 }
 

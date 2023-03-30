@@ -14,6 +14,7 @@ public:
         LOGIN,
         MESSAGE,
         START_GAME,
+        MAKE_MOVE,
         DISCONNECT,
         COUNT
     };

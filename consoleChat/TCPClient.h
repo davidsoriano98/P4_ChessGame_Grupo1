@@ -13,7 +13,8 @@ private:
 	sf::TcpSocket* serverSocket;
 	unsigned int ID = 0;
 
-	bool hasRival;
+	bool hasRival = false;
+	bool isMyTurn = false;
 
 public:
 	void Send(sf::Packet infoPack);
@@ -24,5 +25,6 @@ public:
 	void Disconnect();
 	int GetID();
 	bool GetHasRival();
+	bool GetIsMyTurn();
 };
 

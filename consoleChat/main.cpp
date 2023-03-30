@@ -42,10 +42,10 @@ void OpenListener(TCPServer* _tcpServer)
 	}
 }
 
-void OpenBoardGame()
+void OpenBoardGame(TCPClient client)
 {
 	ChessBoard board;
-	board.Run();
+	board.Run(client);
 }
 
 void Server()
@@ -114,7 +114,9 @@ void Client()
 
 		if (!createdBoardThread && tcpClient.GetHasRival())
 		{
-			std::thread boardGameThread(OpenBoardGame);
+			std::thread boardGameThread(OpenBoardGame, tcpClient);
+			boardGameThread.detach();
+
 			createdBoardThread = true;
 		}
 	}

@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <random>
 #include "TCPSocketManager.h"
+#include "ChessBoard.h"
+#include "pieces.h"
 
 class TCPServer : TCPSocketManager
 {
@@ -20,6 +22,9 @@ private:
 
     unsigned int idValue = 0;
 
+    ChessBoard chessBoard;
+    Identity identity;
+
 public:
     sf::Socket::Status Listen(unsigned short port, sf::IpAddress ip);
     bool Send(sf::Packet sendPacket, int id);
@@ -29,4 +34,9 @@ public:
     void Disconnect();
     void AddListener(unsigned short port);
     void NewWaitingUser(int newUserID);
+    bool IsMoveValid(int initialTile, int finalTile, int piece, int* chessArray);
+
+    void ReceiveLogin();
+    void ReceiveMessage(sf::Packet packet, int id);
+    void ReceiveMakeMove(sf::Packet packet);
 };
