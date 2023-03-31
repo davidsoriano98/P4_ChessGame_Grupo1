@@ -164,6 +164,10 @@ void TCPServer::NewWaitingUser(int newUserID)
     if (waitingUsersIDs.size() > 0)
     {
         bool IsStartingFirst = (0 + (rand() % (1 - 0 + 1)) == 1);
+        
+        int board[64];
+        for (int i = 0; i < 64; i++)
+            board[i] = chessBoard.board[i];
 
         // Joint 2 clients
         playingUsersIDs.push_back(std::make_pair(waitingUsersIDs.front(), newUserID));
@@ -172,10 +176,12 @@ void TCPServer::NewWaitingUser(int newUserID)
         infoPacket.clear();
         infoPacket << TCPSocketManager::START_GAME << playingUsersIDs.back().first << IsStartingFirst;
         Send(infoPacket, playingUsersIDs.back().first);
+        userBoard[playingUsersIDs.back().first] = board;
 
         infoPacket.clear(); 
         infoPacket << TCPSocketManager::START_GAME << playingUsersIDs.back().second << !IsStartingFirst;
         Send(infoPacket, playingUsersIDs.back().second);
+        userBoard[playingUsersIDs.back().second] = board;
     }
     else
     {
@@ -224,10 +230,12 @@ void TCPServer::ReceiveMakeMove(sf::Packet packet)
     int tempInitialTile;
     int tempFinalTile;
     int tempPiece;
-    int* tempChessArray{};
+    int* tempChessArray;
 
     // Extract data
     packet >> tempInitialTile >> tempFinalTile >> tempPiece >> *tempChessArray;
+
+    int erer;
 
     // Check if move is valid
     if (IsMoveValid(tempInitialTile, tempFinalTile, tempPiece, tempChessArray))

@@ -1,38 +1,39 @@
 #pragma once
 #include "ChessBoard.h"
 
-void ChessBoard::loadtextures(Texture texture[64]) {
+void ChessBoard::LoadTextures(Texture texture[64]) 
+{
     for (int i = 0; i < 64; i++) 
     {
         if (spritepositions[i] == 0 || spritepositions[i] == 7)
             texture[i].loadFromFile("images/blackRook.png");
-        if (spritepositions[i] == 1 || spritepositions[i] == 6)
+        else if (spritepositions[i] == 1 || spritepositions[i] == 6)
             texture[i].loadFromFile("images/blackKnight.png");
-        if (spritepositions[i] == 2 || spritepositions[i] == 5)
+        else if (spritepositions[i] == 2 || spritepositions[i] == 5)
             texture[i].loadFromFile("images/blackBishop.png");
-        if (spritepositions[i] == 3)
+        else if (spritepositions[i] == 3)
             texture[i].loadFromFile("images/blackQueen.png");
-        if (spritepositions[i] == 4)
+        else if (spritepositions[i] == 4)
             texture[i].loadFromFile("images/blackKing.png");
-        if (spritepositions[i] >= 8 && spritepositions[i] <= 15)
+        else if (spritepositions[i] >= 8 && spritepositions[i] <= 15)
             texture[i].loadFromFile("images/blackPawn.png");
-        if (spritepositions[i] == 63 || spritepositions[i] == 56)
+        else if (spritepositions[i] == 63 || spritepositions[i] == 56)
             texture[i].loadFromFile("images/whiteRook.png");
-        if (spritepositions[i] == 62 || spritepositions[i] == 57)
+        else if (spritepositions[i] == 62 || spritepositions[i] == 57)
             texture[i].loadFromFile("images/whiteKnight.png");
-        if (spritepositions[i] == 61 || spritepositions[i] == 58)
+        else if (spritepositions[i] == 61 || spritepositions[i] == 58)
             texture[i].loadFromFile("images/whiteBishop.png");
-        if (spritepositions[i] == 59)
+        else if (spritepositions[i] == 59)
             texture[i].loadFromFile("images/whiteQueen.png");
-        if (spritepositions[i] == 60)
+        else if (spritepositions[i] == 60)
             texture[i].loadFromFile("images/whiteKing.png");
-        if (spritepositions[i] >= 48 && spritepositions[i] <= 55)
+        else if (spritepositions[i] >= 48 && spritepositions[i] <= 55)
             texture[i].loadFromFile("images/whitePawn.png");
     }
 }
 
 
-void ChessBoard::loadboard(Texture texture[64], RectangleShape rectangle[64], Sprite sprite[64]) 
+void ChessBoard::LoadBoard(Texture texture[64], RectangleShape rectangle[64], Sprite sprite[64]) 
 {
     for (int j = 0; j < 64; j++) 
     {
@@ -62,7 +63,7 @@ void ChessBoard::loadboard(Texture texture[64], RectangleShape rectangle[64], Sp
 }
 
 
-bool ChessBoard::updateboard(int n, int j, sf::RectangleShape rectangle[64], sf::Sprite sprite[65]) 
+bool ChessBoard::UpdateBoard(int n, int j, sf::RectangleShape rectangle[64], sf::Sprite sprite[65]) 
 {
     int cc;
     Vector2f secondpos;
@@ -110,8 +111,8 @@ void ChessBoard::Run(TCPClient client)
     sf::RectangleShape rectangle[64];
     sf::Texture texture[65];
     sf::Sprite sprite[65];
-    loadtextures(texture);
-    loadboard(texture, rectangle, sprite);
+    LoadTextures(texture);
+    LoadBoard(texture, rectangle, sprite);
     Identity box;
     bool isMove, game_end;
     int n;
@@ -202,10 +203,16 @@ void ChessBoard::Run(TCPClient client)
                     {
                         if (rectangle[j].getGlobalBounds().contains(pos.x, pos.y)) 
                         {
-                            isMove = box.Identifier(n, j, board[n], board);
+                            client.SendMove(n, j, board[n], board);
+                            while (!client.GetReceivedValidation())
+                            {
+                                sleep(sf::milliseconds(200));
+                            }
+                            isMove = client.GetIsValidMove();
+
                             if (isMove) 
                             {
-                                game_end = updateboard(n, j, rectangle, sprite); 
+                                game_end = UpdateBoard(n, j, rectangle, sprite); 
                                 q[j] = spritepositions[j];
                                 if (game_end) { window.close(); }
                             }

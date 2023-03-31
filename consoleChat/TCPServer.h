@@ -19,6 +19,7 @@ private:
 
     std::list<int> waitingUsersIDs;
     std::list<std::pair<int, int>> playingUsersIDs;
+    std::map<int, int*> userBoard;
 
     unsigned int idValue = 0;
 

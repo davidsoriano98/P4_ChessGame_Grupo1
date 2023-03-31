@@ -22,6 +22,14 @@ void TCPClient::SendLogin()
     Send(infoPack);
 }
 
+void TCPClient::SendMove(int initialTile, int finalTile, int piece, int* arrOfChess)
+{
+    sf::Packet packet;
+    packet << TCPSocketManager::MAKE_MOVE << ID << initialTile << finalTile << piece << *arrOfChess;
+
+    Send(packet);
+}
+
 void TCPClient::Receive()
 {
     sf::Packet packet;
@@ -63,7 +71,6 @@ void TCPClient::Receive()
 
             hasRival = true;
             packet >> isMyTurn;
-
             break;
 
         case TCPSocketManager::DISCONNECT:
@@ -145,4 +152,15 @@ bool TCPClient::GetHasRival()
 bool TCPClient::GetIsMyTurn()
 {
     return isMyTurn;
+}
+
+bool TCPClient::GetReceivedValidation()
+{
+    return receivedValidation;
+}
+
+bool TCPClient::GetIsValidMove()
+{
+    receivedValidation = false;
+    return isValidMove;
 }
