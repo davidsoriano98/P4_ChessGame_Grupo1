@@ -123,7 +123,7 @@ void TCPServer::Receive(sf::Packet receivedPacket, int id)
         break;
 
     case TCPSocketManager::MAKE_MOVE:
-        ReceiveMakeMove(receivedPacket);
+        ReceiveMakeMove(receivedPacket, id);
 
         break;
 
@@ -164,10 +164,10 @@ void TCPServer::NewWaitingUser(int newUserID)
     if (waitingUsersIDs.size() > 0)
     {
         bool IsStartingFirst = (0 + (rand() % (1 - 0 + 1)) == 1);
-        
-        int board[64];
-        for (int i = 0; i < 64; i++)
-            board[i] = chessBoard.board[i];
+        ChessGame game;
+        game.firstID = waitingUsersIDs.front();
+        game.secondID = newUserID;
+        chessGames.emplace_back(&game);
 
         // Joint 2 clients
         playingUsersIDs.push_back(std::make_pair(waitingUsersIDs.front(), newUserID));
@@ -176,12 +176,12 @@ void TCPServer::NewWaitingUser(int newUserID)
         infoPacket.clear();
         infoPacket << TCPSocketManager::START_GAME << playingUsersIDs.back().first << IsStartingFirst;
         Send(infoPacket, playingUsersIDs.back().first);
-        userBoard[playingUsersIDs.back().first] = board;
+        userBoard[playingUsersIDs.back().first] = &game;
 
         infoPacket.clear(); 
         infoPacket << TCPSocketManager::START_GAME << playingUsersIDs.back().second << !IsStartingFirst;
         Send(infoPacket, playingUsersIDs.back().second);
-        userBoard[playingUsersIDs.back().second] = board;
+        userBoard[playingUsersIDs.back().second] = &game;
     }
     else
     {
@@ -225,26 +225,41 @@ void TCPServer::ReceiveMessage(sf::Packet packet, int id)
     }
 }
 
-void TCPServer::ReceiveMakeMove(sf::Packet packet)
+void TCPServer::ReceiveMakeMove(sf::Packet packet, int id)
 {
+    sf::Packet outPacket;
     int tempInitialTile;
     int tempFinalTile;
     int tempPiece;
-    int* tempChessArray;
+    bool tempIsValid;
 
     // Extract data
-    packet >> tempInitialTile >> tempFinalTile >> tempPiece >> *tempChessArray;
-
-    int erer;
+    packet >> tempInitialTile >> tempFinalTile >> tempPiece;
 
     // Check if move is valid
-    if (IsMoveValid(tempInitialTile, tempFinalTile, tempPiece, tempChessArray))
+    tempIsValid = IsMoveValid(tempInitialTile, tempFinalTile, tempPiece, userBoard[id]->board);
+    
+    // Inform of valid move
+    outPacket << TCPSocketManager::MOVE_RESPONSE << id << tempIsValid;
+    Send(outPacket, id);
+
+    // Update other user
+    if (tempIsValid)
     {
-        // Inform of valid move & update both boards + change turn
+        // Send packet to other player to update the board
+        outPacket.clear();
+        if (id == userBoard[id]->firstID)
+        {
+            outPacket << TCPSocketManager::UPDATE_GAME << userBoard[id]->secondID << tempInitialTile << tempFinalTile << tempPiece;
+            Send(outPacket, userBoard[id]->secondID);
+        }
+        else
+        {
+            outPacket << TCPSocketManager::UPDATE_GAME << userBoard[id]->firstID << tempInitialTile << tempFinalTile << tempPiece;
+            Send(outPacket, userBoard[id]->firstID);
+        }
     }
-    else
-    {
-        // Inform of invalid move
-    }
+
+    std::cout << "Valid? " << tempIsValid << std::endl;
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "ChessBoard.h"
+#include "TCPClient.h"
 
 void ChessBoard::LoadTextures(Texture texture[64]) 
 {
@@ -105,27 +106,24 @@ bool ChessBoard::UpdateBoard(int n, int j, sf::RectangleShape rectangle[64], sf:
 
 
 
-void ChessBoard::Run(TCPClient client)
+void ChessBoard::Run(TCPClient* client)
 {
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGTH), "Chess: The Game Of Clowns!");
-    sf::RectangleShape rectangle[64];
     sf::Texture texture[65];
-    sf::Sprite sprite[65];
     LoadTextures(texture);
     LoadBoard(texture, rectangle, sprite);
     Identity box;
     bool isMove, game_end;
-    int n;
     int position;
     Vector2f firstpos, secondpos;
-    int v; int q[64];
+    int v; 
     static int cap = 0;
 
     for (int j = 0; j < 64; ++j)
         q[j] = 64;
 
     ///
-    int turnOffset = (int)client.GetIsMyTurn();
+    int turnOffset = (int)client->GetIsMyTurn();
     ///
 
     Vector2i pos;
@@ -133,6 +131,17 @@ void ChessBoard::Run(TCPClient client)
     {
         pos = Mouse::getPosition(window);
         sf::Event event;
+
+        if (client->GetReceivedUpdate())
+        {
+            client->SetReceivedUpdate(false);
+            game_end = UpdateBoard(externalUpdateData.initialTile, externalUpdateData.finalTile, rectangle, sprite);
+            q[externalUpdateData.finalTile] = spritepositions[externalUpdateData.finalTile];
+
+            if (game_end)
+                window.close();
+        }
+
         while (window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed) 
@@ -140,7 +149,7 @@ void ChessBoard::Run(TCPClient client)
                 window.close();
             }
             // Pieces selection
-            if (sf::Mouse::isButtonPressed(sf::Mouse::Right) && client.GetIsMyTurn())
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Right) && client->GetIsMyTurn())
             {
                 for (int j = 0; j < 64; ++j)
                 {
@@ -148,12 +157,12 @@ void ChessBoard::Run(TCPClient client)
                     {
                         if (rectangle[j].getGlobalBounds().contains(pos.x, pos.y))
                         {
-                            n = j;
+                            initTile = j;
                             firstpos = rectangle[j].getPosition();
                             v = spritepositions[j];
-                            rectangle[n].setFillColor(sf::Color::Red);
+                            rectangle[initTile].setFillColor(sf::Color::Red);
 
-                            if (spritepositions[n] != 64)
+                            if (spritepositions[initTile] != 64)
                                 cap++;
                         }
                     }
@@ -203,18 +212,23 @@ void ChessBoard::Run(TCPClient client)
                     {
                         if (rectangle[j].getGlobalBounds().contains(pos.x, pos.y)) 
                         {
-                            client.SendMove(n, j, board[n], board);
-                            while (!client.GetReceivedValidation())
+                            // Send Move
+                            client->SendMove(initTile, j, board[initTile]);
+                            while (!client->GetReceivedValidation()) 
                             {
+                                // Wait until server response
                                 sleep(sf::milliseconds(200));
                             }
-                            isMove = client.GetIsValidMove();
+                            // Update if valid or not
+                            isMove = client->GetIsValidMove();
 
                             if (isMove) 
                             {
-                                game_end = UpdateBoard(n, j, rectangle, sprite); 
+                                game_end = UpdateBoard(initTile, j, rectangle, sprite); 
                                 q[j] = spritepositions[j];
-                                if (game_end) { window.close(); }
+                                
+                                if (game_end) 
+                                    window.close();
                             }
 
                             // Filling board colors
@@ -244,9 +258,10 @@ void ChessBoard::Run(TCPClient client)
 
         for (int j = 0; j < 65; j++) 
         {
-            if (q[j] == 64)
-                window.draw(sprite[j]);
+            //if (q[j] == 64)
+            window.draw(sprite[j]);
         }
         window.display();
     }
 }
+

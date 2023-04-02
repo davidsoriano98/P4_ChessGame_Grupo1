@@ -15,6 +15,8 @@ public:
         MESSAGE,
         START_GAME,
         MAKE_MOVE,
+        MOVE_RESPONSE,
+        UPDATE_GAME,
         DISCONNECT,
         COUNT
     };

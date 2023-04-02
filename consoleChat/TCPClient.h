@@ -6,6 +6,7 @@
 #include <map>
 #include <algorithm>
 #include "TCPSocketManager.h"
+#include "ChessBoard.h"
 
 class TCPClient : TCPSocketManager
 {
@@ -18,19 +19,29 @@ private:
 
 	bool receivedValidation = false;
 	bool isValidMove = false;
+	bool receivedUpdate = false;
+
+	ChessBoard* chessBoard;
 
 public:
 	void Send(sf::Packet infoPack);
 	void SendLogin();
-	void SendMove(int initialTile, int finalTile, int piece, int* arrOfChess);
+	void SendMove(int initialTile, int finalTile, int piece);
 	void Receive();
+	void ReceiveUpdateGame(sf::Packet gamePack);
 	bool SendMessage(sf::Packet mssgInfo, std::string* message);
+	
 	sf::Socket::Status Connect(unsigned short port, sf::IpAddress ip);
 	void Disconnect();
+
 	int GetID();
 	bool GetHasRival();
 	bool GetIsMyTurn();
 	bool GetReceivedValidation();
 	bool GetIsValidMove();
+	bool GetReceivedUpdate();
+
+	void SetReceivedUpdate(bool _receiveUpdate);
+	void SetBoard(ChessBoard* _chessBoard);
 };
 

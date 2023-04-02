@@ -13,15 +13,29 @@
 class TCPServer : TCPSocketManager
 {
 private:
+    struct ChessGame
+    {
+        int firstID;
+        int secondID;
+        int board[64] = { -1,-2,-3,-4,-5,-3,-2,-1,
+                            -6,-6,-6,-6,-6,-6,-6,-6,
+                            0, 0, 0, 0, 0, 0, 0, 0,
+                            0, 0, 0, 0, 0, 0, 0, 0,
+                            0, 0, 0, 0, 0, 0, 0, 0,
+                            0, 0, 0, 0, 0, 0, 0, 0,
+                            6, 6, 6, 6, 6, 6, 6, 6,
+                            1, 2, 3, 4, 5, 3, 2, 1 };
+    };
+    std::list<ChessGame> chessGames;
+
     sf::TcpListener listener;
     sf::SocketSelector selector;
     std::map<int, sf::TcpSocket*> users;
+    unsigned int idValue = 0;
 
     std::list<int> waitingUsersIDs;
     std::list<std::pair<int, int>> playingUsersIDs;
-    std::map<int, int*> userBoard;
-
-    unsigned int idValue = 0;
+    std::map<int, ChessGame*> userBoard;
 
     ChessBoard chessBoard;
     Identity identity;
@@ -39,5 +53,5 @@ public:
 
     void ReceiveLogin();
     void ReceiveMessage(sf::Packet packet, int id);
-    void ReceiveMakeMove(sf::Packet packet);
+    void ReceiveMakeMove(sf::Packet packet, int id);
 };

@@ -22,10 +22,10 @@ void TCPClient::SendLogin()
     Send(infoPack);
 }
 
-void TCPClient::SendMove(int initialTile, int finalTile, int piece, int* arrOfChess)
+void TCPClient::SendMove(int initialTile, int finalTile, int piece)
 {
     sf::Packet packet;
-    packet << TCPSocketManager::MAKE_MOVE << ID << initialTile << finalTile << piece << *arrOfChess;
+    packet << TCPSocketManager::MAKE_MOVE << ID << initialTile << finalTile << piece;
 
     Send(packet);
 }
@@ -73,6 +73,23 @@ void TCPClient::Receive()
             packet >> isMyTurn;
             break;
 
+        case TCPSocketManager::MOVE_RESPONSE:
+            if (identification != ID)
+                return;
+
+            packet >> isValidMove;
+            receivedValidation = true;
+            std::cout << "MOVE_RESPONSE" << std::endl;
+            break;
+
+        case TCPSocketManager::UPDATE_GAME:
+            if (identification != ID)
+                return;
+
+            std::cout << "UPDATE_GAME" << std::endl;
+            ReceiveUpdateGame(packet);
+            break;
+
         case TCPSocketManager::DISCONNECT:
             if (identification != ID)
                 return;
@@ -86,6 +103,12 @@ void TCPClient::Receive()
 
         //std::cout << "Received message" << std::endl;
     }
+}
+
+void TCPClient::ReceiveUpdateGame(sf::Packet gamePack)
+{
+    gamePack >> chessBoard->externalUpdateData.initialTile >> chessBoard->externalUpdateData.finalTile >> chessBoard->externalUpdateData.piece;
+    SetReceivedUpdate(true);
 }
 
 bool TCPClient::SendMessage(sf::Packet mssgInfo, std::string* message)
@@ -163,4 +186,19 @@ bool TCPClient::GetIsValidMove()
 {
     receivedValidation = false;
     return isValidMove;
+}
+
+bool TCPClient::GetReceivedUpdate()
+{
+    return receivedUpdate;
+}
+
+void TCPClient::SetReceivedUpdate(bool _receiveUpdate)
+{
+    receivedUpdate = _receiveUpdate;
+}
+
+void TCPClient::SetBoard(ChessBoard* _chessBoard)
+{
+    chessBoard = _chessBoard;
 }
