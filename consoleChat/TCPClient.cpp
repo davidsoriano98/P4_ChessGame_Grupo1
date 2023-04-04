@@ -30,6 +30,13 @@ void TCPClient::SendMove(int initialTile, int finalTile, int piece)
     Send(packet);
 }
 
+void TCPClient::SendContinuePlaying()
+{
+    sf::Packet packet;
+    packet << TCPSocketManager::CONTINUE << ID;
+    Send(packet);
+}
+
 void TCPClient::Receive()
 {
     sf::Packet packet;
@@ -69,6 +76,7 @@ void TCPClient::Receive()
             if (identification != ID)
                 return;
 
+            receivedGameClose = false;
             hasRival = true;
             packet >> isMyTurn;
             break;
@@ -88,6 +96,16 @@ void TCPClient::Receive()
 
             std::cout << "UPDATE_GAME" << std::endl;
             ReceiveUpdateGame(packet);
+            break;
+
+        case TCPSocketManager::GAME_CLOSE:
+            if (identification != ID)
+                return;
+
+            receivedGameClose = true;
+
+            // Ask if they want to play again
+            std::cout << "Want to play again? (Y/N)" << std::endl;
             break;
 
         case TCPSocketManager::DISCONNECT:
@@ -151,6 +169,14 @@ bool TCPClient::SendMessage(sf::Packet mssgInfo, std::string* message)
 	return true;
 }
 
+void TCPClient::SendWindowClosed()
+{
+    sf::Packet pack;
+
+    pack << TCPSocketManager::GAME_CLOSE << ID;
+    Send(pack);
+}
+
 sf::Socket::Status TCPClient::Connect(unsigned short port, sf::IpAddress ip)
 {
     serverSocket = new sf::TcpSocket;
@@ -199,6 +225,11 @@ bool TCPClient::GetIsValidMove()
 bool TCPClient::GetReceivedUpdate()
 {
     return receivedUpdate;
+}
+
+bool TCPClient::GetReceivedGameClose()
+{
+    return receivedGameClose;
 }
 
 void TCPClient::SetReceivedUpdate(bool _receiveUpdate)

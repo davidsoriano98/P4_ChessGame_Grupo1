@@ -110,7 +110,19 @@ void Client()
 
 		if (sendMessage.size() != 0)
 		{
-			// Send message
+			if (tcpClient.GetReceivedGameClose())
+			{
+				if (sendMessage == 'Y' || sendMessage == 'y')
+				{
+					tcpClient.SendContinuePlaying();
+					sendMessage.clear();
+				}
+				else if (sendMessage == 'N' || sendMessage == 'n')
+				{
+					applicationRunning = false;
+					sendMessage.clear();
+				}
+			}
 		}
 
 		if (!createdBoardThread && tcpClient.GetHasRival())
@@ -122,6 +134,7 @@ void Client()
 		}
 	}
 
+	// FIX THIS (Probably wrong)
 	sendMessage = "exit";
 	tcpClient.SendMessage(infoPacket, &sendMessage);
 	tcpClient.Disconnect();

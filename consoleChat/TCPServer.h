@@ -34,7 +34,6 @@ private:
     unsigned int idValue = 0;
 
     std::list<int> waitingUsersIDs;
-    std::list<std::pair<int, int>> playingUsersIDs;
     std::map<int, ChessGame*> userBoard;
 
     ChessBoard chessBoard;
@@ -54,4 +53,5 @@ public:
     void ReceiveLogin();
     void ReceiveMessage(sf::Packet packet, int id);
     void ReceiveMakeMove(sf::Packet packet, int id);
+    void ReceiveGameClose(sf::Packet packet, int id);
 };

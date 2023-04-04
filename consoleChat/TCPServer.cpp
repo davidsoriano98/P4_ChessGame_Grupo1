@@ -124,7 +124,14 @@ void TCPServer::Receive(sf::Packet receivedPacket, int id)
 
     case TCPSocketManager::MAKE_MOVE:
         ReceiveMakeMove(receivedPacket, id);
+        break;
 
+    case TCPSocketManager::GAME_CLOSE:
+        ReceiveGameClose(receivedPacket, id);
+        break;
+
+    case TCPSocketManager::CONTINUE:
+        NewWaitingUser(id);
         break;
 
     case TCPSocketManager::DISCONNECT:
@@ -169,19 +176,18 @@ void TCPServer::NewWaitingUser(int newUserID)
         game.secondID = newUserID;
         chessGames.emplace_back(game);
 
-        // Joint 2 clients
-        playingUsersIDs.push_back(std::make_pair(waitingUsersIDs.front(), newUserID));
-        waitingUsersIDs.pop_front();
 
         infoPacket.clear();
-        infoPacket << TCPSocketManager::START_GAME << playingUsersIDs.back().first << IsStartingFirst;
-        Send(infoPacket, playingUsersIDs.back().first);
-        userBoard[playingUsersIDs.back().first] = &chessGames.back();
+        infoPacket << TCPSocketManager::START_GAME << waitingUsersIDs.front() << IsStartingFirst;
+        Send(infoPacket, waitingUsersIDs.front());
+        userBoard[waitingUsersIDs.front()] = &chessGames.back();
 
         infoPacket.clear(); 
-        infoPacket << TCPSocketManager::START_GAME << playingUsersIDs.back().second << !IsStartingFirst;
-        Send(infoPacket, playingUsersIDs.back().second);
-        userBoard[playingUsersIDs.back().second] = &chessGames.back();
+        infoPacket << TCPSocketManager::START_GAME << newUserID << !IsStartingFirst;
+        Send(infoPacket, newUserID);
+        userBoard[newUserID] = &chessGames.back();
+
+        waitingUsersIDs.pop_front();
     }
     else
     {
@@ -261,5 +267,40 @@ void TCPServer::ReceiveMakeMove(sf::Packet packet, int id)
     }
 
     //std::cout << "Valid? " << tempIsValid << std::endl;
+}
+
+void TCPServer::ReceiveGameClose(sf::Packet packet, int id)
+{
+    // clean all user data related to game
+    int otherPlayerId;
+    if (id == userBoard[id]->firstID)
+    {
+        otherPlayerId = userBoard[id]->secondID;
+    }
+    else
+    {
+        otherPlayerId = userBoard[id]->firstID;
+    }
+
+    for (std::list<ChessGame>::reverse_iterator it = chessGames.rbegin(); it != chessGames.rend(); ++it)
+    {
+        if (it->firstID == id || it->secondID == id)
+        {
+            chessGames.erase(it.base());
+            break;
+        }
+    }
+    
+    userBoard.erase(id);
+    userBoard.erase(otherPlayerId);
+
+    // inform other player of game close & ask both if they wanna play again
+    sf::Packet outPacket;
+    outPacket << TCPSocketManager::GAME_CLOSE << id;
+    Send(outPacket, id);
+
+    outPacket.clear();
+    outPacket << TCPSocketManager::GAME_CLOSE << otherPlayerId;
+    Send(outPacket, otherPlayerId);
 }
 

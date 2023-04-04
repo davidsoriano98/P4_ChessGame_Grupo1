@@ -104,9 +104,6 @@ bool ChessBoard::UpdateBoard(int n, int j, sf::RectangleShape rectangle[64], sf:
     return false; // Game not finished
 }
 
-
-
-
 void ChessBoard::Run(TCPClient* client)
 {
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGTH), "Chess: The Game Of Clowns!");
@@ -136,9 +133,11 @@ void ChessBoard::Run(TCPClient* client)
             client->SetReceivedUpdate(false);
             game_end = UpdateBoard(externalUpdateData.initialTile, externalUpdateData.finalTile, rectangle, sprite);
             q[externalUpdateData.finalTile] = spritepositions[externalUpdateData.finalTile];
+        }
 
-            if (game_end)
-                window.close();
+        if (client->GetReceivedGameClose())
+        {
+            window.close();
         }
 
         while (window.pollEvent(event))
@@ -146,6 +145,7 @@ void ChessBoard::Run(TCPClient* client)
             if (event.type == sf::Event::Closed) 
             {
                 window.close();
+                client->SendWindowClosed();
             }
             // Pieces selection
             if (sf::Mouse::isButtonPressed(sf::Mouse::Right) && (turn % 2 == 0 + turnOffset))
@@ -191,8 +191,11 @@ void ChessBoard::Run(TCPClient* client)
                                 game_end = UpdateBoard(initTile, j, rectangle, sprite); 
                                 q[j] = spritepositions[j];
                                 
-                                if (game_end) 
+                                if (game_end)
+                                {
                                     window.close();
+                                    client->SendWindowClosed();
+                                }
                             }
 
                             // Filling board colors
@@ -228,4 +231,5 @@ void ChessBoard::Run(TCPClient* client)
         window.display();
     }
 }
+
 

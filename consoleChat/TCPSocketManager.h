@@ -17,6 +17,8 @@ public:
         MAKE_MOVE,
         MOVE_RESPONSE,
         UPDATE_GAME,
+        GAME_CLOSE,
+        CONTINUE,
         DISCONNECT,
         COUNT
     };
