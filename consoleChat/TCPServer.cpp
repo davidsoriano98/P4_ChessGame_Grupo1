@@ -167,7 +167,7 @@ void TCPServer::NewWaitingUser(int newUserID)
         ChessGame game;
         game.firstID = waitingUsersIDs.front();
         game.secondID = newUserID;
-        chessGames.emplace_back(&game);
+        chessGames.emplace_back(game);
 
         // Joint 2 clients
         playingUsersIDs.push_back(std::make_pair(waitingUsersIDs.front(), newUserID));
@@ -176,12 +176,12 @@ void TCPServer::NewWaitingUser(int newUserID)
         infoPacket.clear();
         infoPacket << TCPSocketManager::START_GAME << playingUsersIDs.back().first << IsStartingFirst;
         Send(infoPacket, playingUsersIDs.back().first);
-        userBoard[playingUsersIDs.back().first] = &game;
+        userBoard[playingUsersIDs.back().first] = &chessGames.back();
 
         infoPacket.clear(); 
         infoPacket << TCPSocketManager::START_GAME << playingUsersIDs.back().second << !IsStartingFirst;
         Send(infoPacket, playingUsersIDs.back().second);
-        userBoard[playingUsersIDs.back().second] = &game;
+        userBoard[playingUsersIDs.back().second] = &chessGames.back();
     }
     else
     {
@@ -260,6 +260,6 @@ void TCPServer::ReceiveMakeMove(sf::Packet packet, int id)
         }
     }
 
-    std::cout << "Valid? " << tempIsValid << std::endl;
+    //std::cout << "Valid? " << tempIsValid << std::endl;
 }
 

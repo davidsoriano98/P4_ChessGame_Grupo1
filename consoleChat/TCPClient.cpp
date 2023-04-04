@@ -107,7 +107,15 @@ void TCPClient::Receive()
 
 void TCPClient::ReceiveUpdateGame(sf::Packet gamePack)
 {
-    gamePack >> chessBoard->externalUpdateData.initialTile >> chessBoard->externalUpdateData.finalTile >> chessBoard->externalUpdateData.piece;
+    int tempInitTile;
+    int tempFinalTile;
+    int tempPiece;
+
+    gamePack >> tempInitTile >> tempFinalTile >> tempPiece;
+    chessBoard->externalUpdateData.initialTile = tempInitTile;
+    chessBoard->externalUpdateData.finalTile = tempFinalTile;
+    chessBoard->externalUpdateData.piece = tempPiece;
+
     SetReceivedUpdate(true);
 }
 

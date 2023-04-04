@@ -71,6 +71,7 @@ bool ChessBoard::UpdateBoard(int n, int j, sf::RectangleShape rectangle[64], sf:
     secondpos = rectangle[j].getPosition();
     int spritepos = spritepositions[n];
     bool game_finished;
+
     turn++;
     cc = spritepositions[j];
     if (j != n) 
@@ -122,9 +123,7 @@ void ChessBoard::Run(TCPClient* client)
     for (int j = 0; j < 64; ++j)
         q[j] = 64;
 
-    ///
     int turnOffset = (int)client->GetIsMyTurn();
-    ///
 
     Vector2i pos;
     while (window.isOpen())
@@ -149,11 +148,11 @@ void ChessBoard::Run(TCPClient* client)
                 window.close();
             }
             // Pieces selection
-            if (sf::Mouse::isButtonPressed(sf::Mouse::Right) && client->GetIsMyTurn())
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Right) && (turn % 2 == 0 + turnOffset))
             {
                 for (int j = 0; j < 64; ++j)
                 {
-                    if (turn % 2 == 0 + turnOffset && board[j] > 0)
+                    if (turnOffset == 0 && board[j] < 0 || turnOffset == 1 && board[j] > 0)
                     {
                         if (rectangle[j].getGlobalBounds().contains(pos.x, pos.y))
                         {
@@ -167,41 +166,6 @@ void ChessBoard::Run(TCPClient* client)
                         }
                     }
                 }
-
-
-                // Black pieces turn
-                /*for (int j = 0; j < 64; ++j)
-                {
-                    if (turn % 2 == 0 && board[j] < 0) 
-                    {
-                        if (rectangle[j].getGlobalBounds().contains(pos.x, pos.y))
-                        {
-                            n = j;
-                            firstpos = rectangle[j].getPosition();
-                            v = spritepositions[j];
-                            rectangle[n].setFillColor(sf::Color::Red);
-
-                            if (spritepositions[n] != 64)
-                                cap++;
-                        }
-                    }
-                }
-                // White pieces turn
-                for (int j = 0; j < 64; ++j) 
-                {
-                    if (turn % 2 != 0 && board[j] > 0) 
-                    {
-                        if (rectangle[j].getGlobalBounds().contains(pos.x, pos.y))
-                        {
-                            n = j;
-                            firstpos = rectangle[j].getPosition();
-                            v = spritepositions[j];
-                            rectangle[n].setFillColor(sf::Color::Red);
-                            if (spritepositions[n] != 64)
-                                cap++;
-                        }
-                    }
-                }*/
             }
             if (cap != 0)
             {

@@ -45,8 +45,8 @@ void OpenListener(TCPServer* _tcpServer)
 void OpenBoardGame(TCPClient* client)
 {
 	ChessBoard board;
-	board.Run(client);
 	client->SetBoard(&board);
+	board.Run(client);
 }
 
 void Server()
