@@ -73,33 +73,12 @@ bool TCPServer::Send(sf::Packet sendPacket, int id)
     return true;
 }
 
-void TCPServer::SendAll(std::string message)
+
+void TCPServer::SendDisconnect(int id)
 {
     sf::Packet packet;
-    packet << message;
-
-    if (message == "exit")
-    {
-        SendAll("DISCONNECT");
-        Disconnect();
-    }
-
-    // The listener socket is not ready, test all other sockets (the clients)
-    for (auto it = users.begin(); it != users.end(); ++it)
-    {
-        sf::TcpSocket& client = *it->second;
-        if (selector.isReady(client))
-        {
-            // The client has sent some data, we can receive it
-            sf::Packet packet;
-            if (client.receive(packet) == sf::Socket::Done)
-            {
-                Receive(packet, it->first);
-            }
-        }
-    }
-
-    packet.clear();
+    packet << TCPSocketManager::DISCONNECT << id;
+    Send(packet, id);
 }
 
 void TCPServer::Receive(sf::Packet receivedPacket, int id)
@@ -116,10 +95,6 @@ void TCPServer::Receive(sf::Packet receivedPacket, int id)
     {
     case TCPSocketManager::LOGIN:
         ReceiveLogin();
-        break;
-
-    case TCPSocketManager::MESSAGE:
-        ReceiveMessage(receivedPacket, id);
         break;
 
     case TCPSocketManager::MAKE_MOVE:
@@ -147,15 +122,27 @@ void TCPServer::ClientDisconected(int id)
     users[id]->disconnect();
     users.erase(id);
     std::cout << "Client disconnected" << std::endl;
+
+    if (users.size() <= 0)
+    {
+        listener.close();
+        isServerRunning = false;
+    }
 }
 
 void TCPServer::Disconnect()
 {
-    listener.close();
-
+    std::list<int> tempIDs;
     for (auto it = users.begin(); it != users.end(); ++it)
     {
-        ClientDisconected(it->first);
+        tempIDs.push_back(it->first);
+    }
+
+    int size = tempIDs.size();
+    for (int i = 0; i < size; i++)
+    {
+        SendDisconnect(tempIDs.front());
+        tempIDs.pop_front();
     }
 }
 
@@ -182,7 +169,7 @@ void TCPServer::NewWaitingUser(int newUserID)
         Send(infoPacket, waitingUsersIDs.front());
         userBoard[waitingUsersIDs.front()] = &chessGames.back();
 
-        infoPacket.clear(); 
+        infoPacket.clear();
         infoPacket << TCPSocketManager::START_GAME << newUserID << !IsStartingFirst;
         Send(infoPacket, newUserID);
         userBoard[newUserID] = &chessGames.back();
@@ -215,22 +202,6 @@ void TCPServer::ReceiveLogin()
     NewWaitingUser(idValue);
 }
 
-void TCPServer::ReceiveMessage(sf::Packet packet, int id)
-{
-    std::string tempMssg;
-    packet >> tempMssg;
-
-    if (tempMssg.size() > 0)
-    {
-        if (tempMssg == "exit")
-        {
-            ClientDisconected(id);
-            return;
-        }
-        std::cout << "Received message" << std::endl;
-    }
-}
-
 void TCPServer::ReceiveMakeMove(sf::Packet packet, int id)
 {
     sf::Packet outPacket;
@@ -252,6 +223,10 @@ void TCPServer::ReceiveMakeMove(sf::Packet packet, int id)
     // Update other user
     if (tempIsValid)
     {
+        // Update server board
+        userBoard[id]->board[tempInitialTile] = 0;
+        userBoard[id]->board[tempFinalTile] = tempPiece;
+
         // Send packet to other player to update the board
         outPacket.clear();
         if (id == userBoard[id]->firstID)
@@ -265,12 +240,15 @@ void TCPServer::ReceiveMakeMove(sf::Packet packet, int id)
             Send(outPacket, userBoard[id]->firstID);
         }
     }
-
-    //std::cout << "Valid? " << tempIsValid << std::endl;
 }
 
 void TCPServer::ReceiveGameClose(sf::Packet packet, int id)
 {
+    bool didGameEnd;
+    sf::Packet outPacket;
+
+    packet >> didGameEnd;
+
     // clean all user data related to game
     int otherPlayerId;
     if (id == userBoard[id]->firstID)
@@ -281,21 +259,23 @@ void TCPServer::ReceiveGameClose(sf::Packet packet, int id)
     {
         otherPlayerId = userBoard[id]->firstID;
     }
-
-    for (std::list<ChessGame>::reverse_iterator it = chessGames.rbegin(); it != chessGames.rend(); ++it)
-    {
-        if (it->firstID == id || it->secondID == id)
-        {
-            chessGames.erase(it.base());
-            break;
-        }
-    }
     
     userBoard.erase(id);
     userBoard.erase(otherPlayerId);
 
+    // Inform the players who won/lost if they finished the game (aka killed other player's king)
+    if (didGameEnd)
+    {
+        outPacket << TCPSocketManager::MESSAGE << id << "YOU WIN!";
+        Send(outPacket, id);
+
+        outPacket.clear();
+        outPacket << TCPSocketManager::MESSAGE << otherPlayerId << "YOU LOSE";
+        Send(outPacket, otherPlayerId);
+    }
+
     // inform other player of game close & ask both if they wanna play again
-    sf::Packet outPacket;
+    outPacket.clear();
     outPacket << TCPSocketManager::GAME_CLOSE << id;
     Send(outPacket, id);
 

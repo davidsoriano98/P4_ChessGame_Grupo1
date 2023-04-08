@@ -15,8 +15,8 @@ class TCPServer : TCPSocketManager
 private:
     struct ChessGame
     {
-        int firstID;
-        int secondID;
+        int firstID = 0;
+        int secondID = 0;
         int board[64] = { -1,-2,-3,-4,-5,-3,-2,-1,
                             -6,-6,-6,-6,-6,-6,-6,-6,
                             0, 0, 0, 0, 0, 0, 0, 0,
@@ -40,9 +40,11 @@ private:
     Identity identity;
 
 public:
+    bool isServerRunning = true;
+
     sf::Socket::Status Listen(unsigned short port, sf::IpAddress ip);
     bool Send(sf::Packet sendPacket, int id);
-    void SendAll(std::string message);
+    void SendDisconnect(int id);
     void Receive(sf::Packet receivedPacket, int id);
     void ClientDisconected(int id);
     void Disconnect();
@@ -51,7 +53,6 @@ public:
     bool IsMoveValid(int initialTile, int finalTile, int piece, int* chessArray);
 
     void ReceiveLogin();
-    void ReceiveMessage(sf::Packet packet, int id);
     void ReceiveMakeMove(sf::Packet packet, int id);
     void ReceiveGameClose(sf::Packet packet, int id);
 };

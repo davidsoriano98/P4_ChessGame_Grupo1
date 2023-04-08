@@ -102,7 +102,10 @@ void TCPClient::Receive()
             if (identification != ID)
                 return;
 
-            receivedGameClose = true;
+            receivedGameClose = true; 
+
+            // Reset values
+            ResetValues();
 
             // Ask if they want to play again
             std::cout << "Want to play again? (Y/N)" << std::endl;
@@ -118,8 +121,6 @@ void TCPClient::Receive()
         default:
             break;
         }
-
-        //std::cout << "Received message" << std::endl;
     }
 }
 
@@ -137,44 +138,21 @@ void TCPClient::ReceiveUpdateGame(sf::Packet gamePack)
     SetReceivedUpdate(true);
 }
 
-bool TCPClient::SendMessage(sf::Packet mssgInfo, std::string* message)
-{
-	if (message->size() > 0)
-	{
-		if (*message == "exit")
-		{
-			// Desconection
-			std::cout << "CLIENT DISCONECT" << std::endl;
-			mssgInfo << DISCONNECT << ID << *message;
-			Send(mssgInfo);
-
-			message->clear();
-			return false;
-		}
-		else
-		{
-            if (ID == 0)
-            {
-                mssgInfo << LOGIN << ID << *message;
-            }
-            else
-            {
-                mssgInfo << MESSAGE << ID << *message;
-            }
-            Send(mssgInfo);
-			message->clear();
-		}
-	}
-
-	return true;
-}
-
-void TCPClient::SendWindowClosed()
+void TCPClient::SendWindowClosed(bool gameEnded)
 {
     sf::Packet pack;
 
-    pack << TCPSocketManager::GAME_CLOSE << ID;
+    pack << TCPSocketManager::GAME_CLOSE << ID << gameEnded;
     Send(pack);
+}
+
+void TCPClient::ResetValues()
+{
+    hasRival = false;
+    isMyTurn = false;
+    receivedValidation = false;
+    isValidMove = false;
+    receivedUpdate = false;
 }
 
 sf::Socket::Status TCPClient::Connect(unsigned short port, sf::IpAddress ip)
@@ -184,8 +162,7 @@ sf::Socket::Status TCPClient::Connect(unsigned short port, sf::IpAddress ip)
     sf::Socket::Status status = serverSocket->connect(ip, port, sf::seconds(5.f));
     if (status != sf::Socket::Done)
     {
-        //No se ha podido conectar
-        std::cout << "Error al conectarse con el servidor" << std::endl;
+        std::cout << "Error connecting to the server" << std::endl;
     }
 
     return status;
@@ -193,6 +170,10 @@ sf::Socket::Status TCPClient::Connect(unsigned short port, sf::IpAddress ip)
 
 void TCPClient::Disconnect()
 {
+    sf::Packet packet;
+    packet << TCPSocketManager::DISCONNECT << ID;
+    Send(packet);
+
     serverSocket->disconnect();
 }
 
@@ -240,4 +221,9 @@ void TCPClient::SetReceivedUpdate(bool _receiveUpdate)
 void TCPClient::SetBoard(ChessBoard* _chessBoard)
 {
     chessBoard = _chessBoard;
+}
+
+void TCPClient::SetReceivedGameClose(bool _receivedGameClose)
+{
+    receivedGameClose = _receivedGameClose;
 }

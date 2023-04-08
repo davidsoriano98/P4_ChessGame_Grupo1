@@ -25,14 +25,16 @@ private:
 	ChessBoard* chessBoard;
 
 public:
+	bool createdBoardThread = false;
+
 	void Send(sf::Packet infoPack);
 	void SendLogin();
 	void SendMove(int initialTile, int finalTile, int piece);
 	void SendContinuePlaying();
 	void Receive();
 	void ReceiveUpdateGame(sf::Packet gamePack);
-	bool SendMessage(sf::Packet mssgInfo, std::string* message);
-	void SendWindowClosed();
+	void SendWindowClosed(bool gameFinished);
+	void ResetValues();
 	
 	sf::Socket::Status Connect(unsigned short port, sf::IpAddress ip);
 	void Disconnect();
@@ -47,5 +49,6 @@ public:
 
 	void SetReceivedUpdate(bool _receiveUpdate);
 	void SetBoard(ChessBoard* _chessBoard);
+	void SetReceivedGameClose(bool _receivedGameClose);
 };
 

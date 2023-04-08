@@ -145,7 +145,7 @@ void ChessBoard::Run(TCPClient* client)
             if (event.type == sf::Event::Closed) 
             {
                 window.close();
-                client->SendWindowClosed();
+                client->SendWindowClosed(false);
             }
             // Pieces selection
             if (sf::Mouse::isButtonPressed(sf::Mouse::Right) && (turn % 2 == 0 + turnOffset))
@@ -194,7 +194,7 @@ void ChessBoard::Run(TCPClient* client)
                                 if (game_end)
                                 {
                                     window.close();
-                                    client->SendWindowClosed();
+                                    client->SendWindowClosed(true);
                                 }
                             }
 

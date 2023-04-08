@@ -36,7 +36,7 @@ void OpenListener(TCPServer* _tcpServer)
 {
 	_tcpServer->AddListener(PORT);
 
-	while (applicationRunning)
+	while (_tcpServer->isServerRunning)
 	{
 		_tcpServer->Listen(PORT, IP);
 	}
@@ -47,6 +47,8 @@ void OpenBoardGame(TCPClient* client)
 	ChessBoard board;
 	client->SetBoard(&board);
 	board.Run(client);
+
+	client->createdBoardThread = false;
 }
 
 void Server()
@@ -66,12 +68,20 @@ void Server()
 	std::thread getLines(GetLineFromCin, &sendMessage);
 	getLines.detach();
 
-	while (applicationRunning)
+	while (tcpServer.isServerRunning)
 	{
+		if (sendMessage.size() != 0)
+		{
+			if (sendMessage == "exit")
+			{
+				tcpServer.Disconnect();
+				sendMessage.clear();
+			}
+		}
 
+		applicationRunning = tcpServer.isServerRunning;
 	}
 
-	tcpServer.Disconnect();
 }
 
 void Client()
@@ -80,7 +90,6 @@ void Client()
 	
 	TCPClient tcpClient;
 	TCPSocketManager tcpSocketManager;
-	bool createdBoardThread = false;
 
 	// client connect
 	sf::Socket::Status status = tcpClient.Connect(PORT, IP);
@@ -110,33 +119,41 @@ void Client()
 
 		if (sendMessage.size() != 0)
 		{
+			if (sendMessage == "exit")
+			{
+				applicationRunning = false;
+				sendMessage.clear();
+			}
+
 			if (tcpClient.GetReceivedGameClose())
 			{
 				if (sendMessage == 'Y' || sendMessage == 'y')
 				{
 					tcpClient.SendContinuePlaying();
-					sendMessage.clear();
+					tcpClient.SetReceivedGameClose(false);
 				}
 				else if (sendMessage == 'N' || sendMessage == 'n')
 				{
 					applicationRunning = false;
-					sendMessage.clear();
 				}
+				else
+				{
+					std::cout << "Want to play again? (Y/N)" << std::endl;
+				}
+				sendMessage.clear();
 			}
 		}
 
-		if (!createdBoardThread && tcpClient.GetHasRival())
+		if (!tcpClient.createdBoardThread && tcpClient.GetHasRival())
 		{
 			std::thread boardGameThread(OpenBoardGame, &tcpClient);
 			boardGameThread.detach();
 
-			createdBoardThread = true;
+			tcpClient.createdBoardThread = true;
 		}
 	}
 
-	// FIX THIS (Probably wrong)
-	sendMessage = "exit";
-	tcpClient.SendMessage(infoPacket, &sendMessage);
+	// Disconnect
 	tcpClient.Disconnect();
 }
 
