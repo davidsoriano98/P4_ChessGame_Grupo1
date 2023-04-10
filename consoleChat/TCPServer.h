@@ -13,6 +13,8 @@
 class TCPServer : TCPSocketManager
 {
 private:
+    std::mutex mtx;
+
     struct ChessGame
     {
         int firstID = 0;

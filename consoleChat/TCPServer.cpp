@@ -29,6 +29,7 @@ sf::Socket::Status TCPServer::Listen(unsigned short port, sf::IpAddress ip)
         }
         else
         {
+            mtx.lock();
             // The listener socket is not ready, test all other sockets (the clients)
             for (auto it = users.begin(); it != users.end(); ++it)
             {
@@ -43,6 +44,7 @@ sf::Socket::Status TCPServer::Listen(unsigned short port, sf::IpAddress ip)
                     }
                 }
             }
+            mtx.unlock();
         }
     }
 
@@ -119,31 +121,39 @@ void TCPServer::Receive(sf::Packet receivedPacket, int id)
 
 void TCPServer::ClientDisconected(int id)
 {
+    mtx.lock();
     users[id]->disconnect();
     users.erase(id);
-    std::cout << "Client disconnected" << std::endl;
+    mtx.unlock();
 
-    if (users.size() <= 0)
-    {
-        listener.close();
-        isServerRunning = false;
-    }
+    std::cout << "Client disconnected" << std::endl;
 }
 
 void TCPServer::Disconnect()
 {
     std::list<int> tempIDs;
+    mtx.lock();
     for (auto it = users.begin(); it != users.end(); ++it)
     {
         tempIDs.push_back(it->first);
     }
+    mtx.unlock();
 
     int size = tempIDs.size();
     for (int i = 0; i < size; i++)
     {
         SendDisconnect(tempIDs.front());
+
+        mtx.lock();
+        users[tempIDs.front()]->disconnect();
+        users.erase(tempIDs.front());
+        mtx.unlock();
+
         tempIDs.pop_front();
     }
+
+    listener.close();
+    isServerRunning = false;
 }
 
 void TCPServer::AddListener(unsigned short port)
