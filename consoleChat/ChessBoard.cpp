@@ -128,6 +128,7 @@ void ChessBoard::Run(TCPClient* client)
         pos = Mouse::getPosition(window);
         sf::Event event;
 
+        // Update board when client receives and update
         if (client->GetReceivedUpdate())
         {
             client->SetReceivedUpdate(false);
@@ -135,6 +136,7 @@ void ChessBoard::Run(TCPClient* client)
             q[externalUpdateData.finalTile] = spritepositions[externalUpdateData.finalTile];
         }
 
+        // Close the window when client receives game close
         if (client->GetReceivedGameClose())
         {
             window.close();
@@ -145,6 +147,8 @@ void ChessBoard::Run(TCPClient* client)
             if (event.type == sf::Event::Closed) 
             {
                 window.close();
+
+                // Informs the client of window closing by choice
                 client->SendWindowClosed(false);
             }
             // Pieces selection
@@ -152,7 +156,7 @@ void ChessBoard::Run(TCPClient* client)
             {
                 for (int j = 0; j < 64; ++j)
                 {
-                    if (turnOffset == 0 && board[j] < 0 || turnOffset == 1 && board[j] > 0)
+                    if (turnOffset == 0 && board[j] < 0 || turnOffset == 1 && board[j] > 0) // enter only if it's the client's turn
                     {
                         if (rectangle[j].getGlobalBounds().contains(pos.x, pos.y))
                         {
@@ -194,6 +198,8 @@ void ChessBoard::Run(TCPClient* client)
                                 if (game_end)
                                 {
                                     window.close();
+
+                                    // Informs the client of window closing by game ended
                                     client->SendWindowClosed(true);
                                 }
                             }
@@ -225,7 +231,6 @@ void ChessBoard::Run(TCPClient* client)
 
         for (int j = 0; j < 65; j++) 
         {
-            //if (q[j] == 64)
             window.draw(sprite[j]);
         }
         window.display();

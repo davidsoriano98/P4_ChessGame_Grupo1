@@ -75,7 +75,7 @@ bool TCPServer::Send(sf::Packet sendPacket, int id)
     return true;
 }
 
-
+// Sends a disconnection packet to the specified ID
 void TCPServer::SendDisconnect(int id)
 {
     sf::Packet packet;
@@ -119,6 +119,7 @@ void TCPServer::Receive(sf::Packet receivedPacket, int id)
     }
 }
 
+// Handles the disconnection of the specified client ID
 void TCPServer::ClientDisconected(int id)
 {
     mtx.lock();
@@ -129,10 +130,12 @@ void TCPServer::ClientDisconected(int id)
     std::cout << "Client disconnected" << std::endl;
 }
 
+// Close the server connection& warn the clients that are disconnected
 void TCPServer::Disconnect()
 {
     std::list<int> tempIDs;
     mtx.lock();
+    // save every client ID
     for (auto it = users.begin(); it != users.end(); ++it)
     {
         tempIDs.push_back(it->first);
@@ -142,6 +145,7 @@ void TCPServer::Disconnect()
     int size = tempIDs.size();
     for (int i = 0; i < size; i++)
     {
+        // Disconnect and clean clients
         SendDisconnect(tempIDs.front());
 
         mtx.lock();
@@ -152,6 +156,7 @@ void TCPServer::Disconnect()
         tempIDs.pop_front();
     }
 
+    // Close server
     listener.close();
     isServerRunning = false;
 }
@@ -165,25 +170,34 @@ void TCPServer::AddListener(unsigned short port)
 void TCPServer::NewWaitingUser(int newUserID)
 {
     sf::Packet infoPacket;
+
+    // Check if there are any waiting users
     if (waitingUsersIDs.size() > 0)
     {
+        // set randomly who starts first
         bool IsStartingFirst = (0 + (rand() % (1 - 0 + 1)) == 1);
+
+        // create chessGame and store necessary values
         ChessGame game;
         game.firstID = waitingUsersIDs.front();
         game.secondID = newUserID;
         chessGames.emplace_back(game);
 
-
+        // Inform waiting user
         infoPacket.clear();
         infoPacket << TCPSocketManager::START_GAME << waitingUsersIDs.front() << IsStartingFirst;
         Send(infoPacket, waitingUsersIDs.front());
+        // save linked reference to id & game
         userBoard[waitingUsersIDs.front()] = &chessGames.back();
 
+        // Inform new user
         infoPacket.clear();
         infoPacket << TCPSocketManager::START_GAME << newUserID << !IsStartingFirst;
         Send(infoPacket, newUserID);
+        // save linked reference to id & game
         userBoard[newUserID] = &chessGames.back();
 
+        // Clear waiting users
         waitingUsersIDs.pop_front();
     }
     else
@@ -191,6 +205,7 @@ void TCPServer::NewWaitingUser(int newUserID)
         // Send to waiting
         waitingUsersIDs.push_back(newUserID);
 
+        // Inform user of waiting
         infoPacket.clear();
         infoPacket << TCPSocketManager::MESSAGE << newUserID << "Waiting for opponent";
         Send(infoPacket, newUserID);
@@ -202,6 +217,7 @@ bool TCPServer::IsMoveValid(int initialTile, int finalTile, int piece, int* ches
     return identity.Identifier(initialTile, finalTile, piece, chessArray);
 }
 
+// Sends the new client their designated ID
 void TCPServer::ReceiveLogin()
 {
     sf::Packet sendPacket;
@@ -230,7 +246,7 @@ void TCPServer::ReceiveMakeMove(sf::Packet packet, int id)
     outPacket << TCPSocketManager::MOVE_RESPONSE << id << tempIsValid;
     Send(outPacket, id);
 
-    // Update other user
+    // Update other user if necessary
     if (tempIsValid)
     {
         // Update server board

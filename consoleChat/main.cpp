@@ -24,6 +24,7 @@ void GetLineFromCin(std::string* mssg)
 	}
 }
 
+// Open Client's receive
 void OpenReceiveThread(TCPClient* _tcpClient)
 {
 	while (applicationRunning)
@@ -32,6 +33,7 @@ void OpenReceiveThread(TCPClient* _tcpClient)
 	}
 }
 
+// Open Server litener
 void OpenListener(TCPServer* _tcpServer)
 {
 	_tcpServer->AddListener(PORT);
@@ -42,6 +44,7 @@ void OpenListener(TCPServer* _tcpServer)
 	}
 }
 
+// Run chess game
 void OpenBoardGame(TCPClient* client)
 {
 	ChessBoard board;
@@ -58,8 +61,7 @@ void Server()
 	TCPServer tcpServer;
 
 	sf::Packet infoPacket;
-	std::string sendMessage, receiveMessage;
-	int clientID = 1;
+	std::string sendMessage;
 
 	// Logic for receiving
 	std::thread tcpScoketListen(OpenListener, &tcpServer);
@@ -127,6 +129,7 @@ void Client()
 
 			if (tcpClient.GetReceivedGameClose())
 			{
+				// Client chooses if they want to play again or not
 				if (sendMessage == 'Y' || sendMessage == 'y')
 				{
 					tcpClient.SendContinuePlaying();
@@ -144,6 +147,7 @@ void Client()
 			}
 		}
 
+		// Open board
 		if (!tcpClient.createdBoardThread && tcpClient.GetHasRival())
 		{
 			std::thread boardGameThread(OpenBoardGame, &tcpClient);

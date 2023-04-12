@@ -135,6 +135,7 @@ void TCPClient::ReceiveUpdateGame(sf::Packet gamePack)
     chessBoard->externalUpdateData.finalTile = tempFinalTile;
     chessBoard->externalUpdateData.piece = tempPiece;
 
+    // Inform ChessBoard of game update
     SetReceivedUpdate(true);
 }
 
@@ -170,10 +171,12 @@ sf::Socket::Status TCPClient::Connect(unsigned short port, sf::IpAddress ip)
 
 void TCPClient::Disconnect()
 {
+    // Inform server of disconnection
     sf::Packet packet;
     packet << TCPSocketManager::DISCONNECT << ID;
     Send(packet);
 
+    // Disconnect
     serverSocket->disconnect();
 }
 
